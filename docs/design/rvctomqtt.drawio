@@ -1,0 +1,66 @@
+<mxfile host="app.diagrams.net" modified="2023-03-31T17:41:45.834Z" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.3 Safari/605.1.15" etag="oa3MzBYWiCp7s0qOLCJo" version="21.1.1" type="device">
+  <diagram name="Page-1" id="ogPDV3PzfHZOef62c4_Y">
+    <mxGraphModel dx="1225" dy="697" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="h8XSuICx3nbTkQIXNKar-11" style="edgeStyle=orthogonalEdgeStyle;curved=1;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;startArrow=classic;startFill=1;" edge="1" parent="1" source="h8XSuICx3nbTkQIXNKar-1" target="h8XSuICx3nbTkQIXNKar-2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="h8XSuICx3nbTkQIXNKar-15" value="Linux&lt;br&gt;only" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="h8XSuICx3nbTkQIXNKar-11">
+          <mxGeometry x="-0.1163" y="-1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="h8XSuICx3nbTkQIXNKar-1" value="SocketCan (Raspberry PI)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#99FFFF;" vertex="1" parent="1">
+          <mxGeometry x="74" y="90" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="h8XSuICx3nbTkQIXNKar-2" value="CAN Read/Write&lt;br&gt;(Interface)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#99FFFF;" vertex="1" parent="1">
+          <mxGeometry x="266" y="140" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="h8XSuICx3nbTkQIXNKar-3" value="FileSystem" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#99FFFF;" vertex="1" parent="1">
+          <mxGeometry x="74" y="190" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="h8XSuICx3nbTkQIXNKar-4" value="Can &amp;nbsp;Parser&lt;br&gt;(Raw Can Data Struct)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#99FFFF;" vertex="1" parent="1">
+          <mxGeometry x="426" y="140" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="h8XSuICx3nbTkQIXNKar-5" value="RVC Converter&lt;br&gt;(Raw RVC Messages)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#99FFFF;" vertex="1" parent="1">
+          <mxGeometry x="576" y="140" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="h8XSuICx3nbTkQIXNKar-6" value="RVC Converter&lt;br&gt;(Raw RVC Messages)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#99FFFF;" vertex="1" parent="1">
+          <mxGeometry x="550" y="240" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="h8XSuICx3nbTkQIXNKar-7" value="RVC &amp;nbsp;Mapper&amp;nbsp;&lt;br&gt;(Interpreted RVC Messages)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#99FFFF;" vertex="1" parent="1">
+          <mxGeometry x="490" y="330" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="h8XSuICx3nbTkQIXNKar-8" value="Mapper Config" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#99FFFF;" vertex="1" parent="1">
+          <mxGeometry x="305" y="330" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="h8XSuICx3nbTkQIXNKar-12" style="edgeStyle=orthogonalEdgeStyle;curved=1;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;startArrow=classic;startFill=1;" edge="1" parent="1" source="h8XSuICx3nbTkQIXNKar-3" target="h8XSuICx3nbTkQIXNKar-2">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="204" y="130" as="sourcePoint" />
+            <mxPoint x="240" y="180" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="h8XSuICx3nbTkQIXNKar-13" style="edgeStyle=orthogonalEdgeStyle;curved=1;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;startArrow=none;startFill=0;" edge="1" parent="1" source="h8XSuICx3nbTkQIXNKar-2" target="h8XSuICx3nbTkQIXNKar-4">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="204" y="130" as="sourcePoint" />
+            <mxPoint x="240" y="180" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="h8XSuICx3nbTkQIXNKar-14" style="edgeStyle=orthogonalEdgeStyle;curved=1;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;startArrow=none;startFill=0;" edge="1" parent="1" target="h8XSuICx3nbTkQIXNKar-5">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="510" y="170" as="sourcePoint" />
+            <mxPoint x="400" y="180" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="h8XSuICx3nbTkQIXNKar-19" value="" style="endArrow=none;dashed=1;html=1;rounded=0;curved=1;" edge="1" parent="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="250" y="280" as="sourcePoint" />
+            <mxPoint x="250" y="70" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
