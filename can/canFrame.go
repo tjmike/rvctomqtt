@@ -31,6 +31,7 @@ const (
 //};
 
 type Frame struct {
+	//type frame struct {
 	// 32 bit CAN_ID + EFF/RTR/ERR flags
 	// bit 0-28: CAN identifier (11/29 bit)
 	// bit 29: error message flag (ERR)
@@ -47,19 +48,20 @@ type Frame struct {
 	Data [MaxFrameDataLength]uint8
 }
 
-func IsExtended(f *Frame) bool {
+func (f *Frame) IsExtended() bool {
 	return (f.ID & CAN_EFF_FLAG) != 0
 }
-func IsRTR(f *Frame) bool {
+func (f *Frame) IsRTR() bool {
 	return (f.ID & CAN_RTR_FLAG) != 0
 }
 
-func IsERR(f *Frame) bool {
+func (f *Frame) IsERR() bool {
 	return (f.ID & CAN_ERR_FLAG) != 0
 }
 
-func CanID(f *Frame) uint32 {
-	if IsExtended(f) {
+// This is just the canID without the additional flags
+func (f *Frame) CanID() uint32 {
+	if f.IsExtended() {
 		return f.ID & CAN_EFF_MASK
 	} else {
 		return f.ID & CAN_SFF_MASK
