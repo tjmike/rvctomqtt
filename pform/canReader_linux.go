@@ -19,7 +19,7 @@ import (
  * toSocket   - when a socket message can be reclaimed it will be returned via this channel
  *
  */
-func GetCANMessages(fromSocket, toSocket chan *can.RawCanMessage) {
+func GetCANMessages(fromSocket, toSocket chan *can.Frame) {
 	// We do some byte swswapping and need a temporary byte to store data. We allocate the byte up
 	// front and pass it to the swap function so that an allocation isn't needed for every buffer read.
 	// This stack is is our buffer pool for processing
@@ -33,9 +33,9 @@ func GetCANMessages(fromSocket, toSocket chan *can.RawCanMessage) {
 	// sent to the listener.
 	for i := 0; i < 10; i++ {
 		var xxx [can.MAX_MESSAGE]byte
-		rawCAN := can.RawCanMessage{
-			time.Now(),
-			xxx}
+		rawCAN := can.Frame{
+			Timestamp:    time.Now(),
+			MessageBytes: xxx}
 		myStack.Push(&rawCAN)
 	}
 
@@ -69,7 +69,7 @@ func GetCANMessages(fromSocket, toSocket chan *can.RawCanMessage) {
 	f := os.NewFile(uintptr(s), fmt.Sprintf("fd %d", s))
 
 	// pointer to CAN message pulled from our pool
-	var rawPointer *can.RawCanMessage
+	var rawPointer *can.Frame
 
 	fmt.Println("Start socket loop forever")
 	// Forever
@@ -83,21 +83,21 @@ func GetCANMessages(fromSocket, toSocket chan *can.RawCanMessage) {
 		//
 		if nBuffers > 0 {
 			tmp := myStack.Pop()
-			rawPointer = tmp.(*can.RawCanMessage)
+			rawPointer = tmp.(*can.Frame)
 		} else {
 			// Create a new message, don't put on the stack - this message is already "popped"
 			// We need some instrumentation - query buffer sizes/etc
 			var xxx [can.MAX_MESSAGE]byte
-			rawCAN := can.RawCanMessage{
-				time.Now(),
-				xxx}
+			rawCAN := can.Frame{
+				Timestamp:    time.Now(),
+				MessageBytes: xxx}
 			rawPointer = &rawCAN
 		}
 
 		fmt.Println("READ")
 
 		// var zzz [16]byte
-		_, err := f.Read((*rawPointer).CanMessage[0:can.MAX_MESSAGE])
+		_, err := f.Read((*rawPointer).MessageBytes[0:can.MAX_MESSAGE])
 		// nRead, err := f.Read((*rawPointer).canMessage[0:16])
 		// nRead, err := f.Read(zzz[0:16])
 
@@ -124,9 +124,9 @@ func GetCANMessages(fromSocket, toSocket chan *can.RawCanMessage) {
 
 		//fmt.Printf("GOT: %x\n", binary.LittleEndian.Uint32((*rawPointer).CanMessage[0:]))
 
-		var f = can.Frame{}
-		BuildCanFrame(&f, rawPointer)
-		fmt.Printf("GOT: %s\n", f.ToString())
+		//var f = can.Frame{}
+		BuildCanFrame(rawPointer)
+		fmt.Printf("GOT: %s\n", (*rawPointer).ToString())
 		//fmt.Printf("GOT: %x\n", binary.LittleEndian.Uint32((*rawPointer).CanMessage[0:]))
 
 		// ((*rawPointer).canMessage[0])

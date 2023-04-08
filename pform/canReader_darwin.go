@@ -11,12 +11,12 @@ import (
 	"time"
 )
 
-func GetCANMessages(fromSocket, toSocket chan *rvccan.RawCanMessage) {
+func GetCANMessages(fromSocket, toSocket chan *rvccan.Frame) {
 	fmt.Printf("IMPLEMENT ME\n")
-	var m = &rvccan.RawCanMessage{}
+	var m = &rvccan.Frame{}
 	for {
 		m.Timestamp = time.Now()
-		m.CanMessage[0] = 1
+		m.MessageBytes[0] = 1
 
 		fromSocket <- m
 

@@ -60,10 +60,10 @@ func main() {
 	print("\n")
 
 	// Listen on this to process the raw can message
-	fromSocket := make(chan *can.RawCanMessage, 32)
+	fromSocket := make(chan *can.Frame, 32)
 
 	// When done with the message - give it back to the socket listener
-	toSocket := make(chan *can.RawCanMessage, 32)
+	toSocket := make(chan *can.Frame, 32)
 
 	go pform.GetRVCMessages(fromSocket, toSocket)
 	go can.CanMessageHandler(fromSocket, toSocket)

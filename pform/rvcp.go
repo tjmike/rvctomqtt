@@ -18,11 +18,11 @@ func Doit() {
 	doit()
 }
 
-func GetRVCMessages(fromSocket, toSocket chan *rvccan.RawCanMessage) {
+func GetRVCMessages(fromSocket, toSocket chan *rvccan.Frame) {
 	GetCANMessages(fromSocket, toSocket)
 
 }
-func BuildCanFrame(frame *rvccan.Frame, msg *rvccan.RawCanMessage) {
+func BuildCanFrame(frame *rvccan.Frame) {
 
 	// Raspberry PI May be this
 	// The test passed the other way on PI - so this means that something may be messed up
@@ -31,12 +31,12 @@ func BuildCanFrame(frame *rvccan.Frame, msg *rvccan.RawCanMessage) {
 	//frame.ID = binary.LittleEndian.Uint32((*msg).CanMessage[0:])
 	// MAC does this
 	//frame.ID = binary.BigEndian.Uint32((*msg).CanMessage[0:])
-	frame.Timestamp = (*msg).Timestamp
-	setFrameID(frame, msg)
-	frame.Length = (*msg).CanMessage[4]
-	frame.Flags = (*msg).CanMessage[5]
-	frame.Res0 = (*msg).CanMessage[6]
-	frame.Res1 = (*msg).CanMessage[7]
+	//frame.Timestamp = (*msg).Timestamp
+	setFrameID(frame)
+	frame.Length = (*frame).MessageBytes[4]
+	frame.Flags = (*frame).MessageBytes[5]
+	frame.Res0 = (*frame).MessageBytes[6]
+	frame.Res1 = (*frame).MessageBytes[7]
 
 	// not needed if we set the length and all the bytes
 	for i := range frame.Data {
@@ -44,7 +44,7 @@ func BuildCanFrame(frame *rvccan.Frame, msg *rvccan.RawCanMessage) {
 	}
 	{
 		var fl int = int(frame.Length)
-		for i, v := range (*msg).CanMessage[8:15] {
+		for i, v := range (*frame).MessageBytes[8:15] {
 			if i < fl {
 				frame.Data[i] = v
 			} else {

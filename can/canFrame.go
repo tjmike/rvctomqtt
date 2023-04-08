@@ -53,6 +53,8 @@ type Frame struct {
 	Res1  uint8
 	// data bytes
 	Data [MaxFrameDataLength]uint8
+
+	MessageBytes [MAX_MESSAGE]byte
 }
 
 func (f *Frame) IsExtended() bool {

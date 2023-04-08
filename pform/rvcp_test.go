@@ -34,23 +34,23 @@ func TestBuildCanFrame(t *testing.T) {
 
 	r := setUpRawTestMessage(time.Now(), tstVal)
 
-	var f = can.Frame{}
-	BuildCanFrame(&f, &r)
+	//var f = can.Frame{}
+	BuildCanFrame(&r)
 
-	var id = f.ID
+	var id = r.ID
 	var idExpected uint32 = 0x99FEBD42
 	if id != idExpected {
 		t.Errorf("ID Wrong %x != %x", idExpected, id)
 	}
 
-	var ext = f.IsExtended() // does not compile: f.IsExteded()
+	var ext = r.IsExtended() // does not compile: f.IsExteded()
 	//var ext =  can.IsExteded(f)
 	//var ext bool = can.IsExtended(&f)
 	if !ext {
 		t.Errorf("Frame should be extended format %x", id)
 	}
 
-	var canid = f.CanID()
+	var canid = r.CanID()
 
 	var expectedCanID uint32 = 0x19FEBD42
 
@@ -60,14 +60,14 @@ func TestBuildCanFrame(t *testing.T) {
 	}
 }
 
-func setUpRawTestMessage(ts time.Time, dat [can.MAX_MESSAGE]uint8) can.RawCanMessage {
-	var r = can.RawCanMessage{
-		Timestamp:  ts,
-		CanMessage: [can.MAX_MESSAGE]uint8{},
+func setUpRawTestMessage(ts time.Time, dat [can.MAX_MESSAGE]uint8) can.Frame {
+	var r = can.Frame{
+		Timestamp:    ts,
+		MessageBytes: [can.MAX_MESSAGE]uint8{},
 	}
 
 	for i, v := range dat {
-		r.CanMessage[i] = v
+		r.MessageBytes[i] = v
 	}
 	return r
 }

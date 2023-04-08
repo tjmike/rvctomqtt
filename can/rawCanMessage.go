@@ -27,7 +27,7 @@ const (
 //		msg.canMessage)
 //}
 
-func (msg *RawCanMessage) GetCANID() uint32 {
+func (msg *Frame) GetCANID() uint32 {
 	// TODO this is whats works for Raspberry PI, but it's not been tested on other platforms
-	return binary.LittleEndian.Uint32((*msg).CanMessage[0:])
+	return binary.LittleEndian.Uint32((*msg).MessageBytes[0:])
 }
