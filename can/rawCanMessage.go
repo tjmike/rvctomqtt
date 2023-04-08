@@ -7,7 +7,7 @@ import (
 
 type RawCanMessage struct {
 	Timestamp  time.Time
-	CanMessage [16]byte
+	CanMessage [MAX_MESSAGE]byte
 }
 
 const (

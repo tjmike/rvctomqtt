@@ -31,8 +31,8 @@ func BuildCanFrame(frame *rvccan.Frame, msg *rvccan.RawCanMessage) {
 	//frame.ID = binary.LittleEndian.Uint32((*msg).CanMessage[0:])
 	// MAC does this
 	//frame.ID = binary.BigEndian.Uint32((*msg).CanMessage[0:])
+	frame.Timestamp = (*msg).Timestamp
 	setFrameID(frame, msg)
-
 	frame.Length = (*msg).CanMessage[4]
 	frame.Flags = (*msg).CanMessage[5]
 	frame.Res0 = (*msg).CanMessage[6]
@@ -40,7 +40,17 @@ func BuildCanFrame(frame *rvccan.Frame, msg *rvccan.RawCanMessage) {
 
 	// not needed if we set the length and all the bytes
 	for i := range frame.Data {
-		frame.Data[i] = 0
+		frame.Data[i] = 0xff
+	}
+	{
+		var fl int = int(frame.Length)
+		for i, v := range (*msg).CanMessage[8:15] {
+			if i < fl {
+				frame.Data[i] = v
+			} else {
+				frame.Data[i] = 0xff
+			}
+		}
 	}
 
 }

@@ -29,7 +29,7 @@ func TestBuildCanFrame(t *testing.T) {
 	// We only work whith little edian
 
 	var fullID uint32 = 0x99FEBD42
-	var tstVal = [16]uint8{0x99, 0xFE, 0xBD, 0x42, 0x08, 0x00, 0x00, 0x00, 0x01, 0x00, 0x26, 0x60, 0x27, 0xFF, 0xFF, 0xFF}
+	var tstVal = [can.MAX_MESSAGE]uint8{0x99, 0xFE, 0xBD, 0x42, 0x08, 0x00, 0x00, 0x00, 0x01, 0x00, 0x26, 0x60, 0x27, 0xFF, 0xFF, 0xFF}
 	binary.LittleEndian.PutUint32(tstVal[0:4], fullID)
 
 	r := setUpRawTestMessage(time.Now(), tstVal)
@@ -60,10 +60,10 @@ func TestBuildCanFrame(t *testing.T) {
 	}
 }
 
-func setUpRawTestMessage(ts time.Time, dat [16]uint8) can.RawCanMessage {
+func setUpRawTestMessage(ts time.Time, dat [can.MAX_MESSAGE]uint8) can.RawCanMessage {
 	var r = can.RawCanMessage{
 		Timestamp:  ts,
-		CanMessage: [16]uint8{},
+		CanMessage: [can.MAX_MESSAGE]uint8{},
 	}
 
 	for i, v := range dat {

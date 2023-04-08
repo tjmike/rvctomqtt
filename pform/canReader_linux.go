@@ -1,7 +1,6 @@
 package pform
 
 import (
-	"encoding/binary"
 	"fmt"
 	"github.com/golang-collections/collections/stack"
 	"golang.org/x/sys/unix"
@@ -33,7 +32,7 @@ func GetCANMessages(fromSocket, toSocket chan *can.RawCanMessage) {
 	// The general idea here is the a can message is pulled from the pool , populated and then
 	// sent to the listener.
 	for i := 0; i < 10; i++ {
-		var xxx [16]byte
+		var xxx [can.MAX_MESSAGE]byte
 		rawCAN := can.RawCanMessage{
 			time.Now(),
 			xxx}
@@ -88,7 +87,7 @@ func GetCANMessages(fromSocket, toSocket chan *can.RawCanMessage) {
 		} else {
 			// Create a new message, don't put on the stack - this message is already "popped"
 			// We need some instrumentation - query buffer sizes/etc
-			var xxx [16]byte
+			var xxx [can.MAX_MESSAGE]byte
 			rawCAN := can.RawCanMessage{
 				time.Now(),
 				xxx}
@@ -98,7 +97,7 @@ func GetCANMessages(fromSocket, toSocket chan *can.RawCanMessage) {
 		fmt.Println("READ")
 
 		// var zzz [16]byte
-		_, err := f.Read((*rawPointer).CanMessage[0:16])
+		_, err := f.Read((*rawPointer).CanMessage[0:can.MAX_MESSAGE])
 		// nRead, err := f.Read((*rawPointer).canMessage[0:16])
 		// nRead, err := f.Read(zzz[0:16])
 
@@ -123,7 +122,12 @@ func GetCANMessages(fromSocket, toSocket chan *can.RawCanMessage) {
 			break
 		}
 
-		fmt.Printf("GOT: %x\n", binary.LittleEndian.Uint32((*rawPointer).CanMessage[0:]))
+		//fmt.Printf("GOT: %x\n", binary.LittleEndian.Uint32((*rawPointer).CanMessage[0:]))
+
+		var f = can.Frame{}
+		BuildCanFrame(&f, rawPointer)
+		fmt.Printf("GOT: %s\n", f.ToString())
+		//fmt.Printf("GOT: %x\n", binary.LittleEndian.Uint32((*rawPointer).CanMessage[0:]))
 
 		// ((*rawPointer).canMessage[0])
 		// idBEF := binary.LittleEndian.Uint32(((*rawPointer).canMessage[0:]))

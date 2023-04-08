@@ -1,6 +1,12 @@
 package can
 
+import (
+	"fmt"
+	"time"
+)
+
 const (
+	MAX_MESSAGE        int32 = 16
 	MaxFrameDataLength uint8 = 8
 	// CAN_EFF_FLAG we want these flags to be seen on all platforms so we dont use the
 	// ones from the unix package
@@ -31,6 +37,7 @@ const (
 //};
 
 type Frame struct {
+	Timestamp time.Time
 	//type frame struct {
 	// 32 bit CAN_ID + EFF/RTR/ERR flags
 	// bit 0-28: CAN identifier (11/29 bit)
@@ -66,4 +73,17 @@ func (f *Frame) CanID() uint32 {
 	} else {
 		return f.ID & CAN_SFF_MASK
 	}
+}
+
+func (msg *Frame) ToString() string {
+	return fmt.Sprintf("TS:%d - canID=%X ERR=%t RTR=%t EXT=%t ", // DGN=%X SRCADDR=%X len=%d - % X" ,
+		msg.Timestamp.UnixNano(),
+		msg.CanID(),
+		msg.IsERR(),
+		msg.IsRTR(),
+		msg.IsExtended())
+	//msg.SourceAddress(),
+	//msg.payloadSize(),
+	//msg.canMessage )
+
 }
