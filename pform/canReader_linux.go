@@ -1,6 +1,7 @@
 package pform
 
 import (
+	"encoding/binary"
 	"fmt"
 	"github.com/golang-collections/collections/stack"
 	"golang.org/x/sys/unix"
@@ -9,6 +10,7 @@ import (
 	"rvctomqtt/can"
 	"syscall"
 	"time"
+	"unsafe"
 )
 
 /**
@@ -20,6 +22,9 @@ import (
  *
  */
 func GetCANMessages(fromSocket, toSocket chan *can.Frame) {
+
+	var socketInterface = "can0"
+	var nBuffCreated uint32 = 0
 	// We do some byte swswapping and need a temporary byte to store data. We allocate the byte up
 	// front and pass it to the swap function so that an allocation isn't needed for every buffer read.
 	// This stack is is our buffer pool for processing
@@ -32,18 +37,19 @@ func GetCANMessages(fromSocket, toSocket chan *can.Frame) {
 	// The general idea here is the a can message is pulled from the pool , populated and then
 	// sent to the listener.
 	for i := 0; i < 10; i++ {
-		var xxx [can.MAX_MESSAGE]byte
 		rawCAN := can.Frame{
-			Timestamp:    time.Now(),
-			MessageBytes: xxx}
+			Timestamp: time.Now(),
+		}
 		myStack.Push(&rawCAN)
+		nBuffCreated++
 	}
 
 	// Find the interface we are intersted in by name
 	// TODO - make this a param
-	iface, err := net.InterfaceByName("can0")
+	iface, err := net.InterfaceByName(socketInterface)
 
 	// TODO - learn to handle/print errors, etc.
+	// We should bail if we get an error here
 	if err != nil {
 		// return nil, err
 		return
@@ -55,7 +61,9 @@ func GetCANMessages(fromSocket, toSocket chan *can.Frame) {
 	s, _ := syscall.Socket(syscall.AF_CAN, syscall.SOCK_RAW, unix.CAN_RAW)
 	// s, _ := syscall.Socket(syscall.AF_CAN, syscall.SOCK_RAW, unix.CAN_RAW_FD_FRAMES)
 
-	// This is (I THINK) just strict to hold the interface id
+	// We should bail here if we can't get the socker
+
+	// This is (I THINK) just struct to hold the interface id
 	addr := &unix.SockaddrCAN{Ifindex: iface.Index}
 
 	// Bind the socket and return if there's an error
@@ -72,6 +80,10 @@ func GetCANMessages(fromSocket, toSocket chan *can.Frame) {
 	var rawPointer *can.Frame
 
 	fmt.Println("Start socket loop forever")
+
+	var pktTime time.Time = time.Now()
+	recvTime := syscall.Timeval{}
+
 	// Forever
 	for {
 		fmt.Println("LOOP PASS")
@@ -87,19 +99,49 @@ func GetCANMessages(fromSocket, toSocket chan *can.Frame) {
 		} else {
 			// Create a new message, don't put on the stack - this message is already "popped"
 			// We need some instrumentation - query buffer sizes/etc
-			var xxx [can.MAX_MESSAGE]byte
 			rawCAN := can.Frame{
-				Timestamp:    time.Now(),
-				MessageBytes: xxx}
+				Timestamp: time.Now(),
+			}
 			rawPointer = &rawCAN
+			nBuffCreated++
 		}
 
-		fmt.Println("READ")
+		fmt.Printf("READ - NBUFFCREATED =%d\n", nBuffCreated)
 
 		// var zzz [16]byte
 		_, err := f.Read((*rawPointer).MessageBytes[0:can.MAX_MESSAGE])
 		// nRead, err := f.Read((*rawPointer).canMessage[0:16])
 		// nRead, err := f.Read(zzz[0:16])
+
+		_, _, errno := syscall.Syscall(syscall.SYS_IOCTL, uintptr(f.Fd()), uintptr(syscall.SIOCGSTAMP),
+			uintptr(unsafe.Pointer(&recvTime)))
+
+		//err = nil
+		//if errno != 0 {
+		//	err = errno
+		//}
+		//var EB int = int(errno)
+		//
+		//if EB == 0 {
+		//	fmt.Printf("ZERO EB=%d\n", EB)
+		//}
+		//if EB != 0 {
+		//	fmt.Printf("NOT ZERO EB=%d\n", EB)
+		//}
+
+		if errno == 0 {
+
+			pktTime = time.Unix(0, recvTime.Nano())
+			fmt.Println("PACKET TIME UNIX = ", pktTime.Format(time.RFC3339Nano))
+
+		} else {
+			var xxx = errno.Error()
+			pktTime = time.Now()
+			fmt.Println("PACKET TIME NOW = ", pktTime.Format(time.RFC3339Nano))
+			fmt.Printf("ERROR %s %d\n", xxx, errno)
+
+		}
+		//fmt.Printf("PACKET TIME = %d \n" + pktTime)
 
 		// TODO from https://www.kernel.org/doc/Documentation/networking/can.txt
 		// We can get a more accurate timestamps using ioctl
@@ -125,7 +167,9 @@ func GetCANMessages(fromSocket, toSocket chan *can.Frame) {
 		//fmt.Printf("GOT: %x\n", binary.LittleEndian.Uint32((*rawPointer).CanMessage[0:]))
 
 		//var f = can.Frame{}
-		BuildCanFrame(rawPointer)
+		//setFrameID(rawPointer)
+		rawPointer.BuildCanFrame(binary.LittleEndian.Uint32)
+		//BuildCanFrame(rawPointer)
 		fmt.Printf("GOT: %s\n", (*rawPointer).ToString())
 		//fmt.Printf("GOT: %x\n", binary.LittleEndian.Uint32((*rawPointer).CanMessage[0:]))
 

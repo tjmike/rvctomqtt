@@ -36,6 +36,11 @@ const (
 //__u8 data[CAN_MAX_DLEN] __attribute__((aligned(8)));
 //};
 
+// The lifecycle of a frame is as as follows:
+// 1) Create or pull from pool (in can reader thread)
+// 2) Populate message bytes (in can reader thread)
+// 3) Send over channel
+// 4) Consumer
 type Frame struct {
 	Timestamp time.Time
 	//type frame struct {
@@ -44,16 +49,20 @@ type Frame struct {
 	// bit 29: error message flag (ERR)
 	// bit 30: remote transmision request (RTR)
 	// bit 31: extended frame format (EFF)
+	// This is the canID INCLUDING the 3 MSB flags
 	ID uint32
-	// Data length
+	// Data length (0-8)
 	Length uint8
 	// these three bytes not used
 	Flags uint8
 	Res0  uint8
 	Res1  uint8
-	// data bytes
+	// data bytes - can have zero to max bytes
 	Data [MaxFrameDataLength]uint8
 
+	// These are the raw message bytes. This is what we send to the driver as fread takes bytes. It may be possible
+	// send a struct of the right type that is (unsafely?) cast as bytes. Even if that can be done, maybe using
+	// byte[] is more readable/understandable?
 	MessageBytes [MAX_MESSAGE]byte
 }
 
@@ -87,5 +96,41 @@ func (msg *Frame) ToString() string {
 	//msg.SourceAddress(),
 	//msg.payloadSize(),
 	//msg.canMessage )
+
+}
+
+// BuildCanFrame Build the can frame from the raw data bytes. Conversion of byte[] to uint32 is platform specific
+// so we pass in (a pointer to?) a function that provides that conversion for us.
+func (frame *Frame) BuildCanFrame(bytesTounit func([]byte) uint32) {
+
+	// Raspberry PI May be this
+	// The test passed the other way on PI - so this means that something may be messed up
+	// Leave this comment and keep an eye out. It could be  that the bytes coming from
+	// the socket are messed up.
+	//frame.ID = binary.LittleEndian.Uint32((*msg).CanMessage[0:])
+	// MAC does this
+	//frame.ID = binary.BigEndian.Uint32((*msg).CanMessage[0:])
+	//frame.Timestamp = (*msg).Timestamp
+	frame.ID = bytesTounit(frame.MessageBytes[0:])
+	// setFrameID(frame)
+	frame.Length = (*frame).MessageBytes[4]
+	frame.Flags = (*frame).MessageBytes[5]
+	frame.Res0 = (*frame).MessageBytes[6]
+	frame.Res1 = (*frame).MessageBytes[7]
+
+	// not needed if we set the length and all the bytes
+	for i := range frame.Data {
+		frame.Data[i] = 0xff
+	}
+	{
+		var fl int = int(frame.Length)
+		for i, v := range (*frame).MessageBytes[8:15] {
+			if i < fl {
+				frame.Data[i] = v
+			} else {
+				frame.Data[i] = 0xff
+			}
+		}
+	}
 
 }
