@@ -4,10 +4,9 @@ package pform
 // In this example doit (lower case is different code on darwin vs linux)
 
 import (
-	"encoding/binary"
 	"fmt"
 	//"github.com/tjmike/rvctomqtt/can"
-	"rvctomqtt/can"
+	rvccan "rvctomqtt/can"
 )
 
 func init() {
@@ -19,16 +18,21 @@ func Doit() {
 	doit()
 }
 
-func BuildCanFrame(frame *can.Frame, msg *can.RawCanMessage) {
+func GetRVCMessages(fromSocket, toSocket chan *rvccan.RawCanMessage) {
+	GetCANMessages(fromSocket, toSocket)
+
+}
+func BuildCanFrame(frame *rvccan.Frame, msg *rvccan.RawCanMessage) {
 
 	// Raspberry PI May be this
 	// The test passed the other way on PI - so this means that something may be messed up
 	// Leave this comment and keep an eye out. It could be  that the bytes coming from
 	// the socket are messed up.
 	//frame.ID = binary.LittleEndian.Uint32((*msg).CanMessage[0:])
-
 	// MAC does this
-	frame.ID = binary.BigEndian.Uint32((*msg).CanMessage[0:])
+	//frame.ID = binary.BigEndian.Uint32((*msg).CanMessage[0:])
+	setFrameID(frame, msg)
+
 	frame.Length = (*msg).CanMessage[4]
 	frame.Flags = (*msg).CanMessage[5]
 	frame.Res0 = (*msg).CanMessage[6]

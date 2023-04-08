@@ -1,8 +1,13 @@
 package main
 
 import (
+	"encoding/binary"
 	"fmt"
+	"runtime"
+	"rvctomqtt/can"
 	svc "rvctomqtt/reg"
+	"time"
+	"unsafe"
 
 	//"github.com/tjmike/rvctomqtt/internal/hello"
 	//"github.com/tjmike/rvctomqtt/pform"
@@ -22,5 +27,51 @@ func main() {
 	fmt.Printf("%#v\n", ss)
 
 	pform.Doit()
+
+	var i uint32 = 0x01020304
+	u := unsafe.Pointer(&i)
+	//var foo = [4]byte;
+
+	pb := (*([4]uint8))(u)
+
+	//b := (*pb)[0]
+	fmt.Printf("\n0=%x \n", (*pb)[0])
+	fmt.Printf("\n1=%x \n", (*pb)[1])
+	fmt.Printf("\n2=%x \n", (*pb)[2])
+	fmt.Printf("\n3=%x \n", (*pb)[3])
+
+	var xx = binary.LittleEndian.Uint32((*pb)[0:])
+	fmt.Printf("\nrebuild=%x \n", xx)
+
+	var little = make([]byte, 4)
+	var big = make([]byte, 4)
+	binary.LittleEndian.PutUint32(little, i)
+	binary.BigEndian.PutUint32(big, i)
+
+	for i, v := range little {
+		fmt.Printf("Little %d = %d\n", i, v)
+	}
+	for i, v := range big {
+		fmt.Printf("Big %d = %d\n", i, v)
+	}
+
+	print("MAX PROCS=")
+	print(runtime.GOMAXPROCS(0))
+	print("\n")
+
+	// Listen on this to process the raw can message
+	fromSocket := make(chan *can.RawCanMessage, 32)
+
+	// When done with the message - give it back to the socket listener
+	toSocket := make(chan *can.RawCanMessage, 32)
+
+	go pform.GetRVCMessages(fromSocket, toSocket)
+	go can.CanMessageHandler(fromSocket, toSocket)
+
+	for {
+		print("Sleep\n")
+		time.Sleep(time.Second * 30)
+	}
+	//return (b == 0x04)
 
 }

@@ -4,6 +4,7 @@ package pform
 // In this example doit (lower case is different code on darwin vs linux)
 
 import (
+	"encoding/binary"
 	//"github.com/tjmike/rvctomqtt/can"
 	"rvctomqtt/can"
 	"testing"
@@ -25,8 +26,13 @@ func TestBuildCanFrame(t *testing.T) {
 	//
 	//1  9    F    E   B      D    4    2
 
+	// We only work whith little edian
+
+	var fullID uint32 = 0x99FEBD42
 	var tstVal = [16]uint8{0x99, 0xFE, 0xBD, 0x42, 0x08, 0x00, 0x00, 0x00, 0x01, 0x00, 0x26, 0x60, 0x27, 0xFF, 0xFF, 0xFF}
-	r := setUpRawTestMessage(tstVal)
+	binary.LittleEndian.PutUint32(tstVal[0:4], fullID)
+
+	r := setUpRawTestMessage(time.Now(), tstVal)
 
 	var f = can.Frame{}
 	BuildCanFrame(&f, &r)
@@ -54,9 +60,9 @@ func TestBuildCanFrame(t *testing.T) {
 	}
 }
 
-func setUpRawTestMessage(dat [16]uint8) can.RawCanMessage {
+func setUpRawTestMessage(ts time.Time, dat [16]uint8) can.RawCanMessage {
 	var r = can.RawCanMessage{
-		Timestamp:  time.Now(),
+		Timestamp:  ts,
 		CanMessage: [16]uint8{},
 	}
 
