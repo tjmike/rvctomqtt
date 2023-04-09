@@ -1,6 +1,6 @@
 # rvctomqtt
 
-Convert RVC messages to MQTT messages. Major functionality includes:
+Convert RVC messages to MQTT messages. Major functionality envisioned includes:
 
 1. Listen for RVC messages
 2. Map messages to human readable form

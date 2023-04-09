@@ -35,7 +35,8 @@ func TestBuildCanFrame(t *testing.T) {
 	r := setUpRawTestMessage(time.Now(), tstVal)
 
 	//var f = can.Frame{}
-	BuildCanFrame(&r)
+	r.BuildCanFrame(binary.LittleEndian.Uint32)
+	//BuildCanFrame(&r)
 
 	var id = r.ID
 	var idExpected uint32 = 0x99FEBD42

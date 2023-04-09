@@ -49,7 +49,7 @@ func GetCANMessages(fromSocket, toSocket chan *can.Frame) {
 	iface, err := net.InterfaceByName(socketInterface)
 
 	// TODO - learn to handle/print errors, etc.
-	// We should bail if we get an error here
+	// We should bail intf we get an error here
 	if err != nil {
 		// return nil, err
 		return
@@ -61,12 +61,12 @@ func GetCANMessages(fromSocket, toSocket chan *can.Frame) {
 	s, _ := syscall.Socket(syscall.AF_CAN, syscall.SOCK_RAW, unix.CAN_RAW)
 	// s, _ := syscall.Socket(syscall.AF_CAN, syscall.SOCK_RAW, unix.CAN_RAW_FD_FRAMES)
 
-	// We should bail here if we can't get the socker
+	// We should bail here intf we can't get the socker
 
 	// This is (I THINK) just struct to hold the interface id
 	addr := &unix.SockaddrCAN{Ifindex: iface.Index}
 
-	// Bind the socket and return if there's an error
+	// Bind the socket and return intf there's an error
 	// TODO better error handling
 	if err := unix.Bind(s, addr); err != nil {
 		// return nil, err
@@ -90,7 +90,7 @@ func GetCANMessages(fromSocket, toSocket chan *can.Frame) {
 
 		nBuffers := myStack.Len()
 
-		// make sure we have something in the pool, if not create one
+		// make sure we have something in the pool, intf not create one
 		// for now we can be sure that the stack will not shrink before we pop it
 		//
 		if nBuffers > 0 {
@@ -117,15 +117,15 @@ func GetCANMessages(fromSocket, toSocket chan *can.Frame) {
 			uintptr(unsafe.Pointer(&recvTime)))
 
 		//err = nil
-		//if errno != 0 {
+		//intf errno != 0 {
 		//	err = errno
 		//}
 		//var EB int = int(errno)
 		//
-		//if EB == 0 {
+		//intf EB == 0 {
 		//	fmt.Printf("ZERO EB=%d\n", EB)
 		//}
-		//if EB != 0 {
+		//intf EB != 0 {
 		//	fmt.Printf("NOT ZERO EB=%d\n", EB)
 		//}
 

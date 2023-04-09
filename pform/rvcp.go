@@ -6,7 +6,7 @@ package pform
 import (
 	"fmt"
 	//"github.com/tjmike/rvctomqtt/can"
-	rvccan "rvctomqtt/can"
+	"rvctomqtt/can"
 )
 
 func init() {
@@ -18,7 +18,10 @@ func Doit() {
 	doit()
 }
 
-func GetRVCMessages(fromSocket, toSocket chan *rvccan.Frame) {
+func GetRVCMessages(fromSocket, toSocket chan *can.Frame) {
 	GetCANMessages(fromSocket, toSocket)
+}
 
+func ByteToUint() func([]byte) uint32 {
+	return byteToUint()
 }

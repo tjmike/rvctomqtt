@@ -26,3 +26,7 @@ func init() {
 func doit() {
 	fmt.Printf("darwin doit")
 }
+
+func byteToUint() func([]byte) uint32 {
+	return binary.LittleEndian.Uint32
+}
