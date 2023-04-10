@@ -135,6 +135,6 @@ func (frame *Frame) SetTimeStamp(t time.Time) {
 }
 func (frame *Frame) BuildCanFrameX() {
 	// TODO this cant be here
-	fmt.Println("BUILD CAN FRAME EX")
+	fmt.Println("BUILD CAN FRAME EX - use platform specific method")
 	frame.BuildCanFrame(binary.LittleEndian.Uint32)
 }

@@ -18,7 +18,7 @@ func Doit() {
 	doit()
 }
 
-func GetRVCMessages(pool *pool.Pool, fromSocket, toSocket chan *intf.CanThing) {
+func GetRVCMessages(pool *pool.Pool, fromSocket, toSocket chan *intf.CanFrameIF) {
 	GetCANMessages(pool, fromSocket, toSocket)
 }
 

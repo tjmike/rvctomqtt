@@ -5,13 +5,16 @@ import (
 	"rvctomqtt/intf"
 )
 
+// Pool Simple pool for can frames.
 type Pool struct {
 	myStack      *stack.Stack
-	factory      *intf.CanThingFactory
+	factory      *intf.CanFrameFactory
 	nBuffCreated uint64
 }
 
-func NewPool(f *intf.CanThingFactory, initialCapacity int) *Pool {
+// NewPool - crate a new pool and populate with initialCapacity items. Use the CanFrameFactory to crete new items
+// if needed.
+func NewPool(f *intf.CanFrameFactory, initialCapacity int) *Pool {
 	var p = Pool{
 		myStack:      stack.New(),
 		factory:      f,
@@ -25,7 +28,7 @@ func NewPool(f *intf.CanThingFactory, initialCapacity int) *Pool {
 			if i == initialCapacity {
 				break
 			}
-			var ct *intf.CanThing = (*f).Create()
+			var ct *intf.CanFrameIF = (*f).Create()
 			p.ReturnToPool(ct)
 			p.nBuffCreated++
 			i++
@@ -41,11 +44,11 @@ func (p *Pool) size() int {
 	return p.myStack.Len()
 }
 
-func (p *Pool) ReturnToPool(thing *intf.CanThing) {
-	p.myStack.Push(thing)
+func (p *Pool) ReturnToPool(canFrame *intf.CanFrameIF) {
+	p.myStack.Push(canFrame)
 }
-func (p *Pool) Get() *intf.CanThing {
-	var canThingPointer *intf.CanThing
+func (p *Pool) Get() *intf.CanFrameIF {
+	var canThingPointer *intf.CanFrameIF
 
 	nBuffers := p.myStack.Len()
 	// make sure we have something in the Pool, if not create one
@@ -53,7 +56,7 @@ func (p *Pool) Get() *intf.CanThing {
 	//
 	if nBuffers > 0 {
 		tmp := p.myStack.Pop()
-		canThingPointer = tmp.(*intf.CanThing)
+		canThingPointer = tmp.(*intf.CanFrameIF)
 	} else {
 		// Create a new message, don't put on the stack - this message is already "popped"
 		// We need some instrumentation - query buffer sizes/etc

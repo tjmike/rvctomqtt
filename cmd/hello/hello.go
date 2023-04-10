@@ -62,17 +62,17 @@ func main() {
 	print("\n")
 
 	// Listen on this to process the raw can message
-	fromSocket := make(chan *intf.CanThing, 32)
+	fromSocket := make(chan *intf.CanFrameIF, 32)
 
 	// When done with the message - give it back to the socket listener
-	toSocket := make(chan *intf.CanThing, 32)
+	toSocket := make(chan *intf.CanFrameIF, 32)
 
 	var ff = &can.CanFrameFactory{}
 	var zzz = ff.Create()
 	(*zzz).GetMessage()
 
 	var aa = &can.MyCanThingFactory{}
-	var abc intf.CanThingFactory = aa
+	var abc intf.CanFrameFactory = aa
 
 	var p = pool.NewPool(&abc, 10)
 

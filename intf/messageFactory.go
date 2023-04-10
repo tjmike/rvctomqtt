@@ -1,5 +1,5 @@
 package intf
 
-type CanThingFactory interface {
-	Create() *CanThing
+type CanFrameFactory interface {
+	Create() *CanFrameIF
 }

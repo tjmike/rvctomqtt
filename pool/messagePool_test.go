@@ -11,7 +11,7 @@ import (
 func TestMessagePool(t *testing.T) {
 	var ps int = 10
 	var m = myMessageFactory{}
-	var ctf intf.CanThingFactory = &m
+	var ctf intf.CanFrameFactory = &m
 	var pool = NewPool(&ctf, ps)
 
 	var sz = pool.size()
@@ -68,7 +68,7 @@ func (frame *myMessageFactory) ToString() string {
 	return "Implement ME"
 }
 
-func (f *myMessageFactory) Create() *intf.CanThing {
-	var foo intf.CanThing = &myMessageFactory{}
+func (f *myMessageFactory) Create() *intf.CanFrameIF {
+	var foo intf.CanFrameIF = &myMessageFactory{}
 	return &foo
 }

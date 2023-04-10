@@ -5,8 +5,8 @@ import "rvctomqtt/intf"
 type CanFrameFactory struct {
 }
 
-func (f *CanFrameFactory) Create() *intf.CanThing {
+func (f *CanFrameFactory) Create() *intf.CanFrameIF {
 	var cf = Frame{}
-	var cff intf.CanThing = &cf
+	var cff intf.CanFrameIF = &cf
 	return &cff
 }

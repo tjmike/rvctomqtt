@@ -13,10 +13,10 @@ import (
 	"time"
 )
 
-func GetCANMessages(messagePool *pool.Pool, fromSocket, toSocket chan *intf.CanThing) {
+func GetCANMessages(messagePool *pool.Pool, fromSocket, toSocket chan *intf.CanFrameIF) {
 	fmt.Printf("IMPLEMENT ME\n")
 	//XXX var m = &rvccan.Frame{}
-	var mm intf.CanThing = &rvccan.Frame{}
+	var mm intf.CanFrameIF = &rvccan.Frame{}
 	for {
 		mm.SetTimeStamp(time.Now())
 		//m.Timestamp = time.Now()
