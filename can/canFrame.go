@@ -4,23 +4,12 @@ import (
 	"encoding/binary"
 	"encoding/hex"
 	"fmt"
+	"rvctomqtt/constants"
 	"time"
 )
 
 // We want the CAN_XXX flags to be seen on all platforms so we don't use the
 // ones from the unix package.
-
-const (
-	MAX_MESSAGE        int32 = 16 // largest size a can message can be
-	MaxFrameDataLength uint8 = 8  // largest sie a data fraom can be
-
-	CAN_EFF_FLAG uint32 = 0x80000000 /* EFF/SFF is set in the MSB */
-	CAN_RTR_FLAG uint32 = 0x40000000 /* remote transmission request */
-	CAN_ERR_FLAG uint32 = 0x20000000 /* error message frame */
-	CAN_SFF_MASK uint32 = 0x000007FF /* standard frame format (SFF) */
-	CAN_EFF_MASK uint32 = 0x1FFFFFFF /* extended frame format (EFF) */
-
-)
 
 // Frame represents a standard CAN data frame
 
@@ -63,35 +52,35 @@ type Frame struct {
 	Res0  uint8
 	Res1  uint8
 	// data bytes - can have zero to max bytes
-	Data [MaxFrameDataLength]uint8
+	Data [constants.MaxFrameDataLength]uint8
 
 	// These are the raw message bytes. This is what we send to the driver as fread() takes bytes. It may be possible
 	// send a struct of the right type that is (unsafely?) cast as bytes. Even intf that can be done, maybe using
 	// byte[] is more readable/understandable...
-	MessageBytes [MAX_MESSAGE]byte
+	MessageBytes [constants.MAX_MESSAGE]byte
 }
 
 // IsExtended - true intf this frame is extended format.
 func (f *Frame) IsExtended() bool {
-	return (f.ID & CAN_EFF_FLAG) != 0
+	return (f.ID & constants.CAN_EFF_FLAG) != 0
 }
 
 // IsRTR - true intf this is a remote transmission request
 func (f *Frame) IsRTR() bool {
-	return (f.ID & CAN_RTR_FLAG) != 0
+	return (f.ID & constants.CAN_RTR_FLAG) != 0
 }
 
 // IsERR - true intf this is an error frame
 func (f *Frame) IsERR() bool {
-	return (f.ID & CAN_ERR_FLAG) != 0
+	return (f.ID & constants.CAN_ERR_FLAG) != 0
 }
 
 // CanID - This is just the canID without the additional flags. Either a 29 or 11 bit value.
 func (f *Frame) CanID() uint32 {
 	if f.IsExtended() {
-		return f.ID & CAN_EFF_MASK
+		return f.ID & constants.CAN_EFF_MASK
 	} else {
-		return f.ID & CAN_SFF_MASK
+		return f.ID & constants.CAN_SFF_MASK
 	}
 }
 
@@ -131,7 +120,7 @@ func (frame *Frame) BuildCanFrame(bytesTounit func([]byte) uint32) {
 		}
 		// set unused bytes to all ones
 		i = frame.Length // should already be this, but easier to understand...
-		for ; i < MaxFrameDataLength; i++ {
+		for ; i < constants.MaxFrameDataLength; i++ {
 			frame.Data[i] = 0xFF
 		}
 

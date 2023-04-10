@@ -5,8 +5,10 @@ package pform
 
 import (
 	"encoding/binary"
-	//"github.com/tjmike/rvctomqtt/can"
 	"rvctomqtt/can"
+
+	//"github.com/tjmike/rvctomqtt/can"
+	"rvctomqtt/constants"
 	"testing"
 	"time"
 )
@@ -29,7 +31,7 @@ func TestBuildCanFrame(t *testing.T) {
 	// We only work whith little edian
 
 	var fullID uint32 = 0x99FEBD42
-	var tstVal = [can.MAX_MESSAGE]uint8{0x99, 0xFE, 0xBD, 0x42, 0x08, 0x00, 0x00, 0x00, 0x01, 0x00, 0x26, 0x60, 0x27, 0xFF, 0xFF, 0xFF}
+	var tstVal = [constants.MAX_MESSAGE]uint8{0x99, 0xFE, 0xBD, 0x42, 0x08, 0x00, 0x00, 0x00, 0x01, 0x00, 0x26, 0x60, 0x27, 0xFF, 0xFF, 0xFF}
 	binary.LittleEndian.PutUint32(tstVal[0:4], fullID)
 
 	r := setUpRawTestMessage(time.Now(), tstVal)
@@ -61,10 +63,10 @@ func TestBuildCanFrame(t *testing.T) {
 	}
 }
 
-func setUpRawTestMessage(ts time.Time, dat [can.MAX_MESSAGE]uint8) can.Frame {
+func setUpRawTestMessage(ts time.Time, dat [constants.MAX_MESSAGE]uint8) can.Frame {
 	var r = can.Frame{
 		Timestamp:    ts,
-		MessageBytes: [can.MAX_MESSAGE]uint8{},
+		MessageBytes: [constants.MAX_MESSAGE]uint8{},
 	}
 
 	for i, v := range dat {

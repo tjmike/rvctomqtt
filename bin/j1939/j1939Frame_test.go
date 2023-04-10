@@ -2,6 +2,7 @@ package j1939
 
 import (
 	"rvctomqtt/can"
+	"rvctomqtt/constants"
 	"testing"
 )
 
@@ -16,8 +17,8 @@ func TestJ1939Frame(t *testing.T) {
 		Flags:        0,
 		Res0:         0,
 		Res1:         0,
-		Data:         [8]uint8{},
-		MessageBytes: [16]byte{},
+		Data:         [constants.MaxFrameDataLength]uint8{},
+		MessageBytes: [constants.MAX_MESSAGE]byte{},
 	}
 
 	var j1939 = CreateJ1939(&cf)

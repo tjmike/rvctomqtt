@@ -2,6 +2,7 @@ package pool
 
 import (
 	"fmt"
+	"rvctomqtt/constants"
 	"rvctomqtt/intf"
 	"testing"
 	"time"
@@ -32,7 +33,7 @@ func TestMessagePool(t *testing.T) {
 	}
 
 	var ct = pool.Get()
-	var msg []byte = (*ct).GetMessage()
+	var msg *[constants.MAX_MESSAGE]byte = (*ct).GetMessage()
 	fmt.Printf("created = %d\n", pool.getNBuffCreated())
 	fmt.Printf("msg = %x\n", msg)
 
@@ -50,16 +51,21 @@ func TestMessagePool(t *testing.T) {
 }
 
 type myMessageFactory struct {
-	data [32]byte
+	data [constants.MAX_MESSAGE]byte
 	ts   time.Time
 }
 
-func (f *myMessageFactory) GetMessage() []byte {
-	return f.data[0:]
+func (f *myMessageFactory) GetMessage() *[constants.MAX_MESSAGE]byte {
+	return &f.data
 }
 
-func (frame *myMessageFactory) setTimeStamp(t time.Time) {
+func (frame *myMessageFactory) SetTimeStamp(t time.Time) {
 	frame.ts = t
+}
+func (frame *myMessageFactory) BuildCanFrameX() {
+}
+func (frame *myMessageFactory) ToString() string {
+	return "Implement ME"
 }
 
 func (f *myMessageFactory) Create() *intf.CanThing {
