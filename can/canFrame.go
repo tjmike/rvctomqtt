@@ -1,6 +1,7 @@
 package can
 
 import (
+	"encoding/binary"
 	"encoding/hex"
 	"fmt"
 	"time"
@@ -137,6 +138,14 @@ func (frame *Frame) BuildCanFrame(bytesTounit func([]byte) uint32) {
 	}
 }
 
-func (frame *Frame) getMessage() []byte {
-	return frame.MessageBytes[0:]
+func (frame *Frame) GetMessage() *[16]byte {
+	return &frame.MessageBytes
+}
+func (frame *Frame) SetTimeStamp(t time.Time) {
+	frame.Timestamp = t
+}
+func (frame *Frame) BuildCanFrameX() {
+	// TODO this cant be here
+	fmt.Println("BUILD CAN FRAME EX")
+	frame.BuildCanFrame(binary.LittleEndian.Uint32)
 }

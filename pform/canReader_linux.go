@@ -1,13 +1,13 @@
 package pform
 
 import (
-	"encoding/binary"
 	"fmt"
-	"github.com/golang-collections/collections/stack"
 	"golang.org/x/sys/unix"
 	"net"
 	"os"
-	"rvctomqtt/can"
+	"rvctomqtt/intf"
+	//"rvctomqtt/can"
+	"rvctomqtt/pool"
 	"syscall"
 	"time"
 	"unsafe"
@@ -21,7 +21,7 @@ import (
  * toSocket   - when a socket message can be reclaimed it will be returned via this channel
  *
  */
-func GetCANMessages(fromSocket, toSocket chan *can.Frame) {
+func GetCANMessages(messagePool *pool.Pool, fromSocket, toSocket chan *intf.CanThing) {
 
 	var socketInterface = "can0"
 	var nBuffCreated uint32 = 0
@@ -31,11 +31,12 @@ func GetCANMessages(fromSocket, toSocket chan *can.Frame) {
 	// we push a number of pointers onto the stack
 	// We pop one off for processing, pass it down the line
 	// and it should eventually make it back to use via a channel
-	myStack := stack.New()
+	//XXX myStack := stack.New()
 
 	// Create a pool of CAN Messages
 	// The general idea here is the a can message is pulled from the pool , populated and then
 	// sent to the listener.
+	/*XXX
 	for i := 0; i < 10; i++ {
 		rawCAN := can.Frame{
 			Timestamp: time.Now(),
@@ -43,7 +44,7 @@ func GetCANMessages(fromSocket, toSocket chan *can.Frame) {
 		myStack.Push(&rawCAN)
 		nBuffCreated++
 	}
-
+	*/
 	// Find the interface we are intersted in by name
 	// TODO - make this a param
 	iface, err := net.InterfaceByName(socketInterface)
@@ -77,7 +78,7 @@ func GetCANMessages(fromSocket, toSocket chan *can.Frame) {
 	f := os.NewFile(uintptr(s), fmt.Sprintf("fd %d", s))
 
 	// pointer to CAN message pulled from our pool
-	var rawPointer *can.Frame
+	//XXX var rawPointer *can.Frame
 
 	fmt.Println("Start socket loop forever")
 
@@ -88,28 +89,37 @@ func GetCANMessages(fromSocket, toSocket chan *can.Frame) {
 	for {
 		fmt.Println("LOOP PASS")
 
-		nBuffers := myStack.Len()
+		//XXX nBuffers := myStack.Len()
 
 		// make sure we have something in the pool, intf not create one
 		// for now we can be sure that the stack will not shrink before we pop it
 		//
-		if nBuffers > 0 {
-			tmp := myStack.Pop()
-			rawPointer = tmp.(*can.Frame)
-		} else {
-			// Create a new message, don't put on the stack - this message is already "popped"
-			// We need some instrumentation - query buffer sizes/etc
-			rawCAN := can.Frame{
-				Timestamp: time.Now(),
+		/*
+			if nBuffers > 0 {
+				tmp := myStack.Pop()
+				rawPointer = tmp.(*can.Frame)
+			} else {
+				// Create a new message, don't put on the stack - this message is already "popped"
+				// We need some instrumentation - query buffer sizes/etc
+				rawCAN := can.Frame{
+					Timestamp: time.Now(),
+				}
+				rawPointer = &rawCAN
+				nBuffCreated++
 			}
-			rawPointer = &rawCAN
-			nBuffCreated++
-		}
+
+		*/
+
+		var canThing *intf.CanThing = (*messagePool).Get()
+
+		var bytes = (*canThing).GetMessage()
 
 		fmt.Printf("READ - NBUFFCREATED =%d\n", nBuffCreated)
 
 		// var zzz [16]byte
-		_, err := f.Read((*rawPointer).MessageBytes[0:can.MAX_MESSAGE])
+		//XXX _, err := f.Read((*rawPointer).bytes[0:can.MAX_MESSAGE])
+		_, err := f.Read(bytes[0:])
+		//_, err := f.Read((*rawPointer).MessageBytes[0:can.MAX_MESSAGE])
 		// nRead, err := f.Read((*rawPointer).canMessage[0:16])
 		// nRead, err := f.Read(zzz[0:16])
 
@@ -154,7 +164,8 @@ func GetCANMessages(fromSocket, toSocket chan *can.Frame) {
 		// The timestamp has a resolution of one microsecond and is set automatically
 		// at the reception of a CAN frame.
 
-		(*rawPointer).Timestamp = time.Now()
+		(*canThing).SetTimeStamp(pktTime)
+		// XXX (*rawPointer).Timestamp = time.Now()
 
 		// TODO Handle Errors
 		// We may want to allow a single error or a few errors in a row
@@ -168,9 +179,12 @@ func GetCANMessages(fromSocket, toSocket chan *can.Frame) {
 
 		//var f = can.Frame{}
 		//setFrameID(rawPointer)
-		rawPointer.BuildCanFrame(binary.LittleEndian.Uint32)
+		(*canThing).BuildCanFrameX()
+		fmt.Println((*canThing).ToString())
+
+		// XXX rawPointer.BuildCanFrame(binary.LittleEndian.Uint32)
 		//BuildCanFrame(rawPointer)
-		fmt.Printf("GOT: %s\n", (*rawPointer).ToString())
+		//fmt.Printf("GOT: %s\n", (*rawPointer).ToString())
 		//fmt.Printf("GOT: %x\n", binary.LittleEndian.Uint32((*rawPointer).CanMessage[0:]))
 
 		// ((*rawPointer).canMessage[0])
@@ -207,7 +221,7 @@ func GetCANMessages(fromSocket, toSocket chan *can.Frame) {
 
 		fmt.Println("SEND")
 
-		fromSocket <- rawPointer
+		fromSocket <- canThing
 		// slen := myStack.Len();
 		// print("SLENB=")
 		// print(slen)
@@ -218,7 +232,8 @@ func GetCANMessages(fromSocket, toSocket chan *can.Frame) {
 		for {
 			select {
 			case item := <-toSocket:
-				myStack.Push(item)
+				messagePool.ReturnToPool(item)
+				//XXX myStack.Push(item)
 			default:
 				break bufloop
 			}

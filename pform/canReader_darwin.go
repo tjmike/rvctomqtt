@@ -8,17 +8,22 @@ import (
 	//"time"
 	"fmt"
 	rvccan "rvctomqtt/can"
+	"rvctomqtt/intf"
+	"rvctomqtt/pool"
 	"time"
 )
 
-func GetCANMessages(fromSocket, toSocket chan *rvccan.Frame) {
+func GetCANMessages(messagePool *pool.Pool, fromSocket, toSocket chan *intf.CanThing) {
 	fmt.Printf("IMPLEMENT ME\n")
-	var m = &rvccan.Frame{}
+	//XXX var m = &rvccan.Frame{}
+	var mm intf.CanThing = &rvccan.Frame{}
 	for {
-		m.Timestamp = time.Now()
-		m.MessageBytes[0] = 1
+		mm.SetTimeStamp(time.Now())
+		//m.Timestamp = time.Now()
+		//m.MessageBytes[0] = 1
 
-		fromSocket <- m
+		//fromSocket <- m
+		fromSocket <- &mm
 
 		time.Sleep(time.Second)
 	bufloop:
@@ -26,7 +31,7 @@ func GetCANMessages(fromSocket, toSocket chan *rvccan.Frame) {
 			select {
 			case item := <-toSocket:
 				{
-					m = item
+					mm = *item
 					fmt.Printf("FOUND\n")
 				}
 			default:

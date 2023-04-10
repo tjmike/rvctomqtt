@@ -5,8 +5,8 @@ package pform
 
 import (
 	"fmt"
-	//"github.com/tjmike/rvctomqtt/can"
-	"rvctomqtt/can"
+	"rvctomqtt/intf"
+	"rvctomqtt/pool"
 )
 
 func init() {
@@ -18,8 +18,8 @@ func Doit() {
 	doit()
 }
 
-func GetRVCMessages(fromSocket, toSocket chan *can.Frame) {
-	GetCANMessages(fromSocket, toSocket)
+func GetRVCMessages(pool *pool.Pool, fromSocket, toSocket chan *intf.CanThing) {
+	GetCANMessages(pool, fromSocket, toSocket)
 }
 
 func ByteToUint() func([]byte) uint32 {

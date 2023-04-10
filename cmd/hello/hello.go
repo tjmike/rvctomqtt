@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"runtime"
 	"rvctomqtt/can"
+	"rvctomqtt/intf"
+	"rvctomqtt/pool"
 	svc "rvctomqtt/reg"
 	"time"
 	"unsafe"
@@ -60,12 +62,21 @@ func main() {
 	print("\n")
 
 	// Listen on this to process the raw can message
-	fromSocket := make(chan *can.Frame, 32)
+	fromSocket := make(chan *intf.CanThing, 32)
 
 	// When done with the message - give it back to the socket listener
-	toSocket := make(chan *can.Frame, 32)
+	toSocket := make(chan *intf.CanThing, 32)
 
-	go pform.GetRVCMessages(fromSocket, toSocket)
+	var ff = &can.CanFrameFactory{}
+	var zzz = ff.Create()
+	(*zzz).GetMessage()
+
+	var aa = &can.MyCanThingFactory{}
+	var abc intf.CanThingFactory = aa
+
+	var p = pool.NewPool(&abc, 10)
+
+	go pform.GetRVCMessages(p, fromSocket, toSocket)
 	go can.CanMessageHandler(fromSocket, toSocket)
 
 	for {

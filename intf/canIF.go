@@ -1,5 +1,10 @@
 package intf
 
-type canThing interface {
-	getMessage() []byte
+import "time"
+
+type CanThing interface {
+	GetMessage() *[16]byte
+	SetTimeStamp(t time.Time)
+	BuildCanFrameX()
+	ToString() string
 }

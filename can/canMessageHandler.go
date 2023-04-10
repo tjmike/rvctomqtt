@@ -1,8 +1,11 @@
 package can
 
-import "fmt"
+import (
+	"fmt"
+	"rvctomqtt/intf"
+)
 
-func CanMessageHandler(fromSocket, toSocket chan *Frame) {
+func CanMessageHandler(fromSocket, toSocket chan *intf.CanThing) {
 	fmt.Printf("############################### HANDLER #####################\n")
 	var nmsg uint32 = 0
 	for {

@@ -1,5 +1,5 @@
 package intf
 
-type canThingFactory interface {
-	create() *canThing
+type CanThingFactory interface {
+	Create() *CanThing
 }
