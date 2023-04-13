@@ -84,7 +84,7 @@ func (f *Frame) CanID() uint32 {
 	}
 }
 
-func (msg *Frame) ToString() string {
+func (msg *Frame) String() string {
 	return fmt.Sprintf("TS:%d - canID=%X ERR=%t RTR=%t EXT=%t Data Len=%d Data=%s RAW=%s", // DGN=%X SRCADDR=%X len=%d - % X" ,
 		msg.Timestamp.UnixNano(),
 		msg.CanID(),
@@ -105,6 +105,7 @@ func (msg *Frame) DataLength() uint8 {
 // BuildCanFrame Build the can frame from the raw data bytes. Conversion of byte[] to uint32 is platform specific
 // so we pass in (a pointer to?) a function that provides that conversion for us.
 func (frame *Frame) BuildCanFrame(bytesTounit func([]byte) uint32) {
+	fmt.Println("Build Can Frame (CAN)")
 	frame.ID = bytesTounit(frame.MessageBytes[0:])
 	frame.Length = (*frame).MessageBytes[4]
 	frame.Flags = (*frame).MessageBytes[5]
@@ -135,6 +136,6 @@ func (frame *Frame) SetTimeStamp(t time.Time) {
 }
 func (frame *Frame) BuildCanFrameX() {
 	// TODO this cant be here
-	fmt.Println("BUILD CAN FRAME EX - use platform specific method")
+	fmt.Println("BUILD CAN FRAME X (CAN) - use platform specific method")
 	frame.BuildCanFrame(binary.LittleEndian.Uint32)
 }

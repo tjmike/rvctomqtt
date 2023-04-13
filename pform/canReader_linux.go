@@ -90,7 +90,7 @@ func GetCANMessages(messagePool *pool.Pool, fromSocket, toSocket chan *intf.CanF
 			(*canFrame).SetTimeStamp(pktTime)
 		}
 		(*canFrame).BuildCanFrameX()
-		//fmt.Println((*canFrame).ToString())
+		//fmt.Println((*canFrame).String())
 
 		fromSocket <- canFrame
 

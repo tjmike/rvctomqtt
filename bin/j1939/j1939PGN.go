@@ -17,6 +17,13 @@ type PGN struct {
 	pgn         uint32 // the full PGN word
 }
 
+func (pgn *PGN) GetPDUFormat() byte {
+	return pgn.pduFormat
+}
+func (pgn *PGN) GetPDUSpecific() byte {
+	return pgn.pduSpecific
+}
+
 // func NewPGN(rawPGN uint32) PGN {
 func NewPGN(canFrame *can.Frame) PGN {
 	var rawPGN = (canFrame.ID & 0x03_ff_ff_00) >> 8

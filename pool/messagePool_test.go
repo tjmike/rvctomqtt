@@ -64,7 +64,7 @@ func (frame *myMessageFactory) SetTimeStamp(t time.Time) {
 }
 func (frame *myMessageFactory) BuildCanFrameX() {
 }
-func (frame *myMessageFactory) ToString() string {
+func (frame *myMessageFactory) String() string {
 	return "Implement ME"
 }
 
