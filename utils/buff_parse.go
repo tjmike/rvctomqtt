@@ -9,11 +9,17 @@ import (
 // b - bits
 // # - byte offset
 // # - #bits to grab
+// B
+// # - byte offst
+// # - size 1,2,4
 
 type uintParser struct {
 	byteOffset uint8
 }
 
+func (p *uintParser) parseInt8(buf *[constants.MaxFrameDataLength]byte) uint8 {
+	return getByte(buf, p.byteOffset)
+}
 func (p *uintParser) parseInt32(buf *[constants.MaxFrameDataLength]byte) uint32 {
 	return getuint32(buf, p.byteOffset)
 }
@@ -34,10 +40,11 @@ func (p *bitParser) parseBits(buf *[constants.MaxFrameDataLength]byte) byte {
 		mask = 0x01
 		break
 	case 3:
-		mask = 0x06
+		mask = 0x07
 		break
 	case 4:
 		mask = 0x0f
+		break
 	case 5:
 		mask = 0x1f
 		break
@@ -69,7 +76,7 @@ func getBits(buf *[constants.MaxFrameDataLength]byte, byteOffset byte, bitPos by
 }
 
 // getByte - get the specified byte from the buffer, no error checking is performed
-func getByte(buf *[constants.MaxFrameDataLength]byte, byteOffset int) byte {
+func getByte(buf *[constants.MaxFrameDataLength]byte, byteOffset byte) byte {
 	return buf[byteOffset]
 }
 
