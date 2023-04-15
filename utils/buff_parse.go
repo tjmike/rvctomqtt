@@ -4,14 +4,76 @@ package utils
 import (
 	"encoding/binary"
 	"rvctomqtt/constants"
+	"rvctomqtt/rvc"
 )
 
+// DGN SPEC
+// # HI
+// # LOW (or 0 means only consider high)
+
+// DATA SPEC
 // b - bits
 // # - byte offset
 // # - #bits to grab
 // B
-// # - byte offst
+// # - byte offset
 // # - size 1,2,4
+
+// Data Types
+// unit       type     min   max     precision      special values
+// %          uint8    0     125      0.5%
+// instance   uint8    0     250                      0=all
+// degC       uint8  -40     210       1deg c
+//		      uint16  -273   1735      0.03125 °C
+//		V     uint8     0     250       1 V
+//	          uint16    0    3215.5    0.05 V
+//	    A     uint8     0     250        1A
+
+// MessageSpec
+//
+//				DGNHI
+//			 DGNLOW - 00 means use only high
+//		  Fields
+//	     Field
+//	        Byte
+
+/*
+		"messageSpec": {
+			"DGNName": {
+				"dgnHi": "0x111",
+				"dgnLow": "0x11",
+				"fields": {
+					"Field1": {
+						"byteOffset": 0,
+						"bitOffset": 0,
+						"bits": 8,
+						"status": "retired",
+						"engine": "Gecko",
+						"engine_version": "1.7"
+					}
+				}
+			}
+		}
+	}
+*/
+type message struct {
+	dgn    uint32
+	sa     byte
+	fields int
+}
+
+type RVCMessageIF interface {
+	getRawFrame() *rvc.RvcFrame
+	getName() *string                  // comes from a mapping of the DGN
+	getFields() *map[string]RVCFieldIF // comes from mapping of DGN fields
+}
+
+type RVCFieldIF interface {
+	getFieldIndex() int
+	getValue() float64
+	getFieldName() string
+	getUnits() string
+}
 
 type uintParser struct {
 	byteOffset uint8
