@@ -4,11 +4,10 @@ import (
 	"runtime"
 	"rvctomqtt/handler"
 	"rvctomqtt/intf"
+	"rvctomqtt/pform"
 	"rvctomqtt/pool"
 	"rvctomqtt/rvc"
 	"time"
-
-	"rvctomqtt/pform"
 )
 
 func main() {

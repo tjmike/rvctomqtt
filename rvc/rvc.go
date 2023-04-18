@@ -43,6 +43,12 @@ type RvcFrame struct {
 
 // For priority we already have GetPriority()
 
+func (msg *RvcFrame) DGN() uint32 {
+	var ret uint32 = uint32(msg.DGNHigh())
+	ret = ret << 8
+	ret |= uint32(msg.DGNLow())
+	return ret
+}
 func (msg *RvcFrame) DGNHigh() uint16 {
 
 	// TODO we don't want to compute this every single time...
@@ -94,3 +100,16 @@ func (frame *RvcFrame) BuildCanFrame(bytesTounit func([]byte) uint32) {
 //   * 16 but value
 //   * 32 bit value
 // maybe we can have a function that takes a byte offset (slice) and
+
+type RVCMessageIF interface {
+	getRawFrame() *RvcFrame
+	getName() *string                  // comes from a mapping of the DGN
+	getFields() *map[string]RVCFieldIF // comes from mapping of DGN fields
+}
+
+type RVCFieldIF interface {
+	getFieldIndex() int
+	getValue() float64
+	getFieldName() string
+	getUnits() string
+}

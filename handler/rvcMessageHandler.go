@@ -1,9 +1,11 @@
 package handler
 
 import (
+	"encoding/binary"
 	"fmt"
 	"rvctomqtt/intf"
 	"rvctomqtt/rvc"
+	"rvctomqtt/utils"
 )
 
 func lookup(f *rvc.RvcFrame, dgn uint32) string {
@@ -230,12 +232,17 @@ func lookup(f *rvc.RvcFrame, dgn uint32) string {
 		ret = "THERMOSTAT_SCHEDULE_COMMAND_2"
 		break
 	case 0x1FF9C:
+
+		var p = utils.UintParser{ByteOffset: 1}
 		var instance = f.Data[0]
 
 		var tmp = uint16(f.Data[2]) << 8
 		tmp = tmp | uint16(f.Data[1])
 
-		//var tmp uint16 = binary.LittleEndian.Uint16(f.Data[1:])
+		var tmp2 uint16 = binary.LittleEndian.Uint16(f.Data[1:])
+		var tmp3 = p.ParseInt16(&f.Data)
+		fmt.Printf("BY HHAND = %x and tooling = %x  and util= %x   ", tmp, tmp2, tmp3)
+
 		var temp float64 = float64(tmp)
 		temp = (temp / 32) - 273       // degrees C
 		temp = (temp * 9.0 / 5.0) + 32 // C -> F
@@ -739,17 +746,72 @@ func CanMessageHandler(fromSocket, toSocket chan *intf.CanFrameIF) {
 		data := <-fromSocket
 
 		packets++
-		person, ok := (*data).(*rvc.RvcFrame)
+		rvcFrame, ok := (*data).(*rvc.RvcFrame)
 		if ok {
 
-			var dgn uint32 = uint32(person.DGNHigh()) << 8
-			dgn = dgn | uint32(person.DGNLow())
+			var dgn uint32 = uint32(rvcFrame.DGNHigh()) << 8
+			dgn = dgn | uint32(rvcFrame.DGNLow())
 
+			if (dgn == rvc.DGN_DC_SOURCE_STATUS_1) || (dgn == rvc.DGN_DC_SOURCE_STATUS_1_SPYDER) || (dgn == rvc.DGN_DC_DIMMER_STATUS_3) {
+
+				var dcss rvc.RvcItemIF
+
+				if (dgn == rvc.DGN_DC_SOURCE_STATUS_1) || (dgn == rvc.DGN_DC_SOURCE_STATUS_1_SPYDER) {
+					dcss = &rvc.DCSourceStatus1{}
+				} else {
+					dcss = &rvc.DCDimmerStatus3{}
+				}
+
+				dcss.Init(rvcFrame)
+				fmt.Printf("DCSS1 VALUE = %s\n", dcss)
+
+				var flds = dcss.GetFields()
+				var len = len((*flds))
+				for x := 0; x < len; x++ {
+					var f = (*flds)[x]
+					var tt = f.Gettype()
+					var nn = f.GetName()
+					var nnS = string(nn)
+					var zz string
+					switch tt {
+					case rvc.F64:
+						zz = fmt.Sprintf("%f", dcss.GetFieldFloat64(f))
+						break
+					case rvc.U8:
+						zz = fmt.Sprintf("%d", dcss.GetFieldUint8(f))
+						break
+					default:
+						zz = "UNKNOWN TYPE"
+					}
+
+					if nn == rvc.INSTANCE {
+						fmt.Printf(" DCSS1 MSG INSTANCE FOUND\n")
+						var k = rvc.DGNInstanceKey{DGN: rvcFrame.DGN(), Instance: byte(dcss.GetFieldUint8(f))}
+						var iname, ok = rvc.DGNNames[k]
+						if ok {
+							fmt.Printf(" DCSS1 MSG %x INSTANCE FOUND = FOUND NAME %s\n", dgn, iname)
+
+							nnS = nnS + fmt.Sprintf("(%s)", iname)
+						} else {
+							fmt.Printf(" DCSS1 MSG %x INSTANCE FOUND = NOT FOUND!! INSTANCE =  %s\n", dgn, zz)
+
+						}
+					}
+
+					fmt.Printf("DCSS1 MSGaaa name=%s type=%s value=%s dgn = %x \n", nnS, tt, zz, dgn)
+
+				}
+				//for _, fld := range *dcss.GetFields() {
+				//
+				//}
+				//var f = rvcItem(rvcFrame)
+
+			}
 			nseen := 1 + seen[dgn]
 			seen[dgn] = nseen
-			var VVV = lookup(person, dgn)
-			var sa = person.GetSourceAddress()
-			fmt.Printf("ZZZ RVC FRAME. DGNHI = %x sa = %x #seen = %d name = %s \n", person.DGNHigh(), sa, nseen, VVV)
+			var VVV = lookup(rvcFrame, dgn)
+			var sa = rvcFrame.GetSourceAddress()
+			fmt.Printf("\n\nZZZ RVC FRAME. DGNHI = %x sa = %x #seen = %d name = %s \n", rvcFrame.DGNHigh(), sa, nseen, VVV)
 
 		} else {
 			fmt.Printf("NOT RVC FRAME.")
@@ -759,7 +821,7 @@ func CanMessageHandler(fromSocket, toSocket chan *intf.CanFrameIF) {
 		if (packets % 100) == 0 {
 			fmt.Printf("############# STATS ########\n")
 			for k, v := range seen {
-				var name = lookup(person, k)
+				var name = lookup(rvcFrame, k)
 				fmt.Printf("%10s %10x %10d  %20s\n", "STATS", k, v, name)
 			}
 		}

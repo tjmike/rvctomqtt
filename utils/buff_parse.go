@@ -4,7 +4,6 @@ package utils
 import (
 	"encoding/binary"
 	"rvctomqtt/constants"
-	"rvctomqtt/rvc"
 )
 
 // DGN SPEC
@@ -44,7 +43,7 @@ import (
 				"dgnLow": "0x11",
 				"fields": {
 					"Field1": {
-						"byteOffset": 0,
+						"ByteOffset": 0,
 						"bitOffset": 0,
 						"bits": 8,
 						"status": "retired",
@@ -62,31 +61,18 @@ type message struct {
 	fields int
 }
 
-type RVCMessageIF interface {
-	getRawFrame() *rvc.RvcFrame
-	getName() *string                  // comes from a mapping of the DGN
-	getFields() *map[string]RVCFieldIF // comes from mapping of DGN fields
+type UintParser struct {
+	ByteOffset uint8
 }
 
-type RVCFieldIF interface {
-	getFieldIndex() int
-	getValue() float64
-	getFieldName() string
-	getUnits() string
+func (p *UintParser) parseInt8(buf *[constants.MaxFrameDataLength]byte) uint8 {
+	return GetByte(buf, p.ByteOffset)
 }
-
-type uintParser struct {
-	byteOffset uint8
+func (p *UintParser) ParseInt32(buf *[constants.MaxFrameDataLength]byte) uint32 {
+	return Getuint32(buf, p.ByteOffset)
 }
-
-func (p *uintParser) parseInt8(buf *[constants.MaxFrameDataLength]byte) uint8 {
-	return getByte(buf, p.byteOffset)
-}
-func (p *uintParser) parseInt32(buf *[constants.MaxFrameDataLength]byte) uint32 {
-	return getuint32(buf, p.byteOffset)
-}
-func (p *uintParser) parseInt16(buf *[constants.MaxFrameDataLength]byte) uint16 {
-	return getuint16(buf, p.byteOffset)
+func (p *UintParser) ParseInt16(buf *[constants.MaxFrameDataLength]byte) uint16 {
+	return Getuint16(buf, p.ByteOffset)
 }
 
 type bitParser struct {
@@ -96,10 +82,20 @@ type bitParser struct {
 }
 
 func (p *bitParser) parseBits(buf *[constants.MaxFrameDataLength]byte) byte {
-	var mask uint8 = 0x03 // default to 2 bits
-	switch p.nbits {
+	var mask uint8 = GetMask(p.nbits)
+	return GetBits(buf, p.byteOffset, p.bitPosition, mask)
+}
+
+// GetMask - get the 8 bit mask for the provided number of bits. A request for more that 8 buts will result in
+// a full 8 bit mask 0xff
+func GetMask(bits uint8) uint8 {
+	var mask uint8 // default to 2 bits
+	switch bits {
 	case 1:
 		mask = 0x01
+		break
+	case 2:
+		mask = 0x03
 		break
 	case 3:
 		mask = 0x07
@@ -119,37 +115,36 @@ func (p *bitParser) parseBits(buf *[constants.MaxFrameDataLength]byte) byte {
 	case 8:
 		mask = 0xff
 		break
-	default:
-		mask = 0x03
-
+	default: // clip at at 8 bits
+		mask = 0xff
 	}
-	return getBits(buf, p.byteOffset, p.bitPosition, mask)
+	return mask
 }
 
 // Get the specified bits from the buffer
-// getBits give an input buffer, buff, go to zero based byteoffset in the buffer and make the bit at bitPos the least
+// GetBits give an input buffer, buff, go to zero based byteoffset in the buffer and make the bit at bitPos the least
 // significant bit. Then apply the specified mask. This allows us to pull bits from a byte buffer. No error checking is
 // performed
-func getBits(buf *[constants.MaxFrameDataLength]byte, byteOffset byte, bitPos byte, mask byte) byte {
+func GetBits(buf *[constants.MaxFrameDataLength]byte, byteOffset byte, bitPos byte, mask byte) byte {
 	var ret = buf[byteOffset]
 	ret = ret >> bitPos
 	ret = ret & mask
 	return ret
 }
 
-// getByte - get the specified byte from the buffer, no error checking is performed
-func getByte(buf *[constants.MaxFrameDataLength]byte, byteOffset byte) byte {
+// GetByte - get the specified byte from the buffer, no error checking is performed
+func GetByte(buf *[constants.MaxFrameDataLength]byte, byteOffset byte) byte {
 	return buf[byteOffset]
 }
 
-// getuint16 - get a 16 bit unsigned from the buffer. These are always byte aligned and always built assuming little edian
+// Getuint16 - get a 16 bit unsigned from the buffer. These are always byte aligned and always built assuming little edian
 // as the RVC spec claims data is always little edian
-func getuint16(buf *[constants.MaxFrameDataLength]byte, byteOffset byte) uint16 {
+func Getuint16(buf *[constants.MaxFrameDataLength]byte, byteOffset byte) uint16 {
 	return binary.LittleEndian.Uint16(buf[byteOffset:])
 }
 
-// getuint16 - get a 16 bit unsigned from the buffer. These are always byte aligned and always built assuming little edian
+// Getuint16 - get a 16 bit unsigned from the buffer. These are always byte aligned and always built assuming little edian
 // as the RVC spec claims data is always little edian
-func getuint32(buf *[constants.MaxFrameDataLength]byte, byteOffset byte) uint32 {
+func Getuint32(buf *[constants.MaxFrameDataLength]byte, byteOffset byte) uint32 {
 	return binary.LittleEndian.Uint32(buf[byteOffset:])
 }
