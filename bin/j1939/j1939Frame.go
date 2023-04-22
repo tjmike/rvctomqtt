@@ -58,12 +58,12 @@ func (f *J1939Frame) GetSourceAddress() byte {
 
 func (frame *J1939Frame) BuildCanFrameX() {
 	// TODO this cant be here
-	fmt.Println("BUILD CAN FRAME X  (J1939) - use platform specific method")
+	//fmt.Println("BUILD CAN FRAME X  (J1939) - use platform specific method")
 	frame.BuildCanFrame(binary.LittleEndian.Uint32)
 }
 
 func (frame *J1939Frame) BuildCanFrame(bytesTounit func([]byte) uint32) {
-	fmt.Println("Build Can Frame (J1939)")
+	//fmt.Println("Build Can Frame (J1939)")
 	frame.Frame.BuildCanFrame(bytesTounit)
 	var a = frame.Frame.ID
 	var b = a & PRIORITY_MASK

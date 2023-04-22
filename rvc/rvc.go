@@ -83,12 +83,12 @@ func (msg *RvcFrame) String() string {
 
 func (frame *RvcFrame) BuildCanFrameX() {
 	// TODO this cant be here
-	fmt.Println("BUILD CAN FRAME X  (RVC) - use platform specific method")
+	//fmt.Println("BUILD CAN FRAME X  (RVC) - use platform specific method")
 	frame.BuildCanFrame(binary.LittleEndian.Uint32)
 }
 
 func (frame *RvcFrame) BuildCanFrame(bytesTounit func([]byte) uint32) {
-	fmt.Println("Build Can Frame (RVC)")
+	//fmt.Println("Build Can Frame (RVC)")
 	frame.J1939Frame.BuildCanFrame(bytesTounit)
 }
 

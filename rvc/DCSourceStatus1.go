@@ -26,16 +26,18 @@ type DCSourceStatus1 struct {
 }
 
 var myFields = []dataField{
-	{name: INSTANCE, fieldType: U8},
+	{name: instance, fieldType: U8},
 	{name: PRIORITY, fieldType: U8},
 	{name: VOLTAGE, fieldType: F64},
 	{name: CURRENT, fieldType: F64},
 }
 
 func (i *DCSourceStatus1) String() string {
-	var s = i.RvcItem.String()
-	var t = fmt.Sprintf("Instance: %d priority: %d voltage: %f current: %f", i.deviceInstance, i.devicePriority, i.voltage, i.current)
-	return "ZZZXXX" + s + " " + t
+	//var s = i.RvcItem.String()
+
+	return fmt.Sprintf("DGN: %x(%s) Instance: %d priority: %d voltage: %f current: %f",
+		i.dgn, i.GetName(), i.deviceInstance, i.devicePriority, i.voltage, i.current)
+	//return "ZZZXXX" + s + " " + t
 
 }
 
@@ -46,7 +48,7 @@ func (r *DCSourceStatus1) getInstance() byte {
 }
 
 /*
-func (r *DCSourceStatus1) GetFieldUint8(f dataField) uint8 {
+func (r *DCSourceStatus1) FieldUint8(f dataField) uint8 {
 	r.lockitem.RLock()
 	defer r.lockitem.RUnlock()
 	switch f.name {
@@ -61,24 +63,24 @@ func (r *DCSourceStatus1) GetFieldUint8(f dataField) uint8 {
 }
 */
 
-func (r *DCSourceStatus1) GetFields() *[]dataField {
+func (r *DCSourceStatus1) Fields() *[]dataField {
 	return &myFields
 }
 
-func (r *DCSourceStatus1) GetFieldUint16(f dataField) uint16 {
+func (r *DCSourceStatus1) FieldUint16(f dataField) uint16 {
 	r.lock.RLock()
 	defer r.lock.RUnlock()
 	return 0
 }
-func (r *DCSourceStatus1) GetFieldUint32(f dataField) uint32 {
+func (r *DCSourceStatus1) FieldUint32(f dataField) uint32 {
 	r.lock.RLock()
 	defer r.lock.RUnlock()
 	return 0
 }
-func (r *DCSourceStatus1) GetFieldUint8(f dataField) uint8 {
+func (r *DCSourceStatus1) FieldUint8(f dataField) uint8 {
 	r.lock.RLock()
 	defer r.lock.RUnlock()
-	//var ret = r.RvcItem.GetFieldUint8(f)
+	//var ret = r.RvcItem.FieldUint8(f)
 	//if ret == 0 {
 	//	return ret
 	//}
@@ -93,7 +95,7 @@ func (r *DCSourceStatus1) GetFieldUint8(f dataField) uint8 {
 	return 0 // need to fix all these to be spec compliant (255?)
 
 }
-func (r *DCSourceStatus1) GetFieldFloat64(f dataField) float64 {
+func (r *DCSourceStatus1) FieldFloat64(f dataField) float64 {
 	r.lock.RLock()
 	defer r.lock.RUnlock()
 	switch f {
@@ -111,10 +113,36 @@ func (r *DCSourceStatus1) Init(from *RvcFrame) {
 	r.lock.Lock()
 	defer r.lock.Unlock()
 	r.RvcItem.Init(from)
-
+	var changed = false
 	var dataBytes = &from.Data
-	(*r).deviceInstance = utils.GetByte(dataBytes, 0)
-	(*r).devicePriority = utils.GetByte(dataBytes, 1)
-	(*r).voltage = convert.ToVolts(utils.Getuint16(dataBytes, 2))
-	(*r).current = convert.ToCurrent(utils.Getuint32(dataBytes, 4))
+
+	{
+		var tmp = utils.GetByte(dataBytes, 0)
+		if (*r).deviceInstance != tmp {
+			changed = true
+		}
+		(*r).deviceInstance = tmp
+
+		tmp = utils.GetByte(dataBytes, 1)
+		if (*r).devicePriority != tmp {
+			changed = true
+		}
+		(*r).devicePriority = tmp
+	}
+	{
+		var tmp = convert.ToVolts(utils.Getuint16(dataBytes, 2))
+		if tmp != (*r).voltage {
+			changed = true
+		}
+		(*r).voltage = tmp
+
+		tmp = convert.ToCurrent(utils.Getuint32(dataBytes, 4))
+		if tmp != (*r).current {
+			changed = true
+		}
+		(*r).current = tmp
+	}
+	if changed {
+		(*r).lastChanged = (*r).timestamp
+	}
 }

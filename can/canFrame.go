@@ -105,7 +105,7 @@ func (msg *Frame) DataLength() uint8 {
 // BuildCanFrame Build the can frame from the raw data bytes. Conversion of byte[] to uint32 is platform specific
 // so we pass in (a pointer to?) a function that provides that conversion for us.
 func (frame *Frame) BuildCanFrame(bytesTounit func([]byte) uint32) {
-	fmt.Println("Build Can Frame (CAN)")
+	//fmt.Println("Build Can Frame (CAN)")
 	frame.ID = bytesTounit(frame.MessageBytes[0:])
 	frame.Length = (*frame).MessageBytes[4]
 	frame.Flags = (*frame).MessageBytes[5]

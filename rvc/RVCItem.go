@@ -16,11 +16,12 @@ const (
 	NAFloat64 float64 = math.MaxFloat64
 )
 
-// RVCItem - the general uses case is to take some generic RVC message and turn it into a proper object.
+// RvcItem - the general uses case is to take some generic RVC message and turn it into a proper object.
 type RvcItem struct {
-	name      string
-	dgn       uint32
-	timestamp time.Time
+	name        string    // Once created this does not change
+	dgn         uint32    // Once created this does not change
+	timestamp   time.Time // System timestamp for this message
+	lastChanged time.Time // timestamp of the last change - a sub class is expected to set this
 
 	// have a mutex per parallel item is nice in that multiple items can be queried/manipulated in parallel
 	// is there some better approach though. the main case were we mutate the calue is when we're upating some
@@ -49,43 +50,55 @@ func (i *RvcItem) GetTimestamp() time.Time {
 	defer i.lock.RUnlock()
 	return i.timestamp
 }
-func (i *RvcItem) GetFields() *[]dataField {
+func (i *RvcItem) GetLastChanged() time.Time {
+	i.lock.RLock()
+	defer i.lock.RUnlock()
+	return i.lastChanged
+}
+
+// GetFields - get a list of all the fieds for this item and the data tyoe of that field. This can be used to dynamically
+// query the item. Imagine some generic JSON publisher that uses this to publish data to a queue.
+// It may turn out that this is NOT needed and all we need to to use reflection to get all the public methods and get
+// fields/types based on those method names....
+func (i *RvcItem) Fields() *[]dataField {
 	return nil
 }
 
 // GetFieldUint8 - get the uint8 value of a field. Should only be called for fields that are represented as uint8.
 // Undefined if called on the wrong type
-func (i *RvcItem) GetFieldUint8(f dataField) uint8 {
+func (i *RvcItem) FieldUint8(f dataField) uint8 {
 	return NAuint8
 }
 
 // GetFieldUint8 - get the uint8\16 value of a field. Should only be called for fields that are represented as uint16
 // Undefined if called on the wrong type
-func (i *RvcItem) GetFieldUint16(f dataField) uint16 {
+func (i *RvcItem) FieldUint16(f dataField) uint16 {
 	return NAuint16
 }
 
 // GetFieldUint8 - get the uint32 value of a field. Should only be called for fields that are represented as uint32
 // Undefined if called on the wrong type
-func (i *RvcItem) GetFieldUint32(f dataField) uint32 {
+func (i *RvcItem) FieldUint32(f dataField) uint32 {
 	return NAuint32
 }
 
 // GetFieldUint8 - get the float64 value of a field. Should only be called for fields that are represented as float64
 // Undefined if called on the wrong type
-func (i *RvcItem) GetFieldFloat64(f dataField) float64 {
+func (i *RvcItem) FieldFloat64(f dataField) float64 {
 	return NAFloat64
 }
 
+// RvcItemIF = Get methods are exported.
 type RvcItemIF interface {
 	GetName() string
 	GetDGN() uint32
 	GetTimestamp() time.Time
-	GetFields() *[]dataField
-	GetFieldUint8(f dataField) uint8
-	GetFieldUint16(f dataField) uint16
-	GetFieldUint32(f dataField) uint32
-	GetFieldFloat64(f dataField) float64
+	GetLastChanged() time.Time
+	Fields() *[]dataField
+	FieldUint8(f dataField) uint8
+	FieldUint16(f dataField) uint16
+	FieldUint32(f dataField) uint32
+	FieldFloat64(f dataField) float64
 	Init(f *RvcFrame)
 }
 
@@ -97,4 +110,6 @@ func (r *RvcItem) Init(f *RvcFrame) {
 	r.timestamp = f.Timestamp
 	r.dgn = uint32(f.DGNHigh()) << 8
 	r.dgn = uint32(f.DGNLow()) | r.dgn
+	r.name = DGNName(r.dgn)
+	fmt.Printf("INIT: RVCITEM: dgn:%d name: %s\n", r.dgn, r.name)
 }
