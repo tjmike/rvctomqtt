@@ -19,3 +19,8 @@ func ToPercent(in uint8) float64 {
 	var out = float64(in) / 2
 	return out
 }
+
+func ToDegreesC(in uint8) float64 {
+	var out = float64(in) / 10.0
+	return out
+}

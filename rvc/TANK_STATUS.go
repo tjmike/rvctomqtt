@@ -22,8 +22,10 @@ func (ts *tankStatus) GetInstance() uint8 {
 func (ts *tankStatus) GetRelativeLevel() uint8 {
 	return ts.relativeLevel
 }
+func (ts *tankStatus) GetResolution() uint8 {
+	return ts.resolution
+}
 
-// TODO - interesting problem is is not a "field" but should be listed in the fields list
 func (ts *tankStatus) GetLevel() float64 {
 	return 100.0 * float64(ts.relativeLevel) / float64(ts.resolution)
 }
@@ -48,12 +50,14 @@ func (r *tankStatus) Init(from *RvcFrame) {
 		var tmp = utils.GetByte(dataBytes, 1)
 		if (*r).relativeLevel != tmp {
 			changed = true
+			fmt.Printf("Tankstatus changed - relativeLevel: %d != %d\n", (*r).relativeLevel, tmp)
 		}
 		(*r).relativeLevel = tmp
 
 		tmp = utils.GetByte(dataBytes, 2)
 		if (*r).resolution != tmp {
 			changed = true
+			fmt.Printf("Tankstatus changed - resolution: %d != %d\n", (*r).resolution, tmp)
 		}
 		(*r).resolution = utils.GetByte(dataBytes, 2)
 
@@ -62,12 +66,16 @@ func (r *tankStatus) Init(from *RvcFrame) {
 		var tmp = utils.Getuint16(dataBytes, 3)
 		if (*r).absoluteLevel != tmp {
 			changed = true
+			fmt.Printf("Tankstatus changed - absoluteLevel: %d != %d\n", (*r).absoluteLevel, tmp)
+
 		}
 		(*r).absoluteLevel = tmp
 
 		tmp = utils.Getuint16(dataBytes, 5)
 		if (*r).tankSize != tmp {
 			changed = true
+			fmt.Printf("Tankstatus changed - tankSize: %d != %d\n", (*r).tankSize, tmp)
+
 		}
 		(*r).tankSize = tmp
 	}

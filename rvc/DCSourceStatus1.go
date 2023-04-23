@@ -25,13 +25,6 @@ type DCSourceStatus1 struct {
 	current        float64
 }
 
-var myFields = []dataField{
-	{name: instance, fieldType: U8},
-	{name: PRIORITY, fieldType: U8},
-	{name: VOLTAGE, fieldType: F64},
-	{name: CURRENT, fieldType: F64},
-}
-
 func (i *DCSourceStatus1) String() string {
 	//var s = i.RvcItem.String()
 
@@ -62,52 +55,6 @@ func (r *DCSourceStatus1) FieldUint8(f dataField) uint8 {
 	return NAuint8
 }
 */
-
-func (r *DCSourceStatus1) Fields() *[]dataField {
-	return &myFields
-}
-
-func (r *DCSourceStatus1) FieldUint16(f dataField) uint16 {
-	r.lock.RLock()
-	defer r.lock.RUnlock()
-	return 0
-}
-func (r *DCSourceStatus1) FieldUint32(f dataField) uint32 {
-	r.lock.RLock()
-	defer r.lock.RUnlock()
-	return 0
-}
-func (r *DCSourceStatus1) FieldUint8(f dataField) uint8 {
-	r.lock.RLock()
-	defer r.lock.RUnlock()
-	//var ret = r.RvcItem.FieldUint8(f)
-	//if ret == 0 {
-	//	return ret
-	//}
-	switch f {
-	case myFields[0]:
-		return r.deviceInstance
-		break
-	case myFields[1]:
-		return r.devicePriority
-		break
-	}
-	return 0 // need to fix all these to be spec compliant (255?)
-
-}
-func (r *DCSourceStatus1) FieldFloat64(f dataField) float64 {
-	r.lock.RLock()
-	defer r.lock.RUnlock()
-	switch f {
-	case myFields[2]:
-		return r.voltage
-		break
-	case myFields[3]:
-		return r.current
-		break
-	}
-	return 0
-}
 
 func (r *DCSourceStatus1) Init(from *RvcFrame) {
 	r.lock.Lock()

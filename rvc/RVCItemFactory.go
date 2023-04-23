@@ -1,6 +1,9 @@
 package rvc
 
-import sync2 "sync"
+import (
+	"rvctomqtt/constants"
+	sync2 "sync"
+)
 
 // A cache of RVCItems  - one per DGN/Instance key
 // This cache also knows how to create items
@@ -15,13 +18,14 @@ import sync2 "sync"
 var rvcItemMap map[DGNInstanceKey]*RvcItemIF
 
 // dgnHasInstances - a singleton map that tells us if this DGN has an instance field. Since we maintain the state of everything
-// we need to know if a particular DGN has multiple instances. If true we also assume the 1st byte is the instance number
-// NOTE: If we run into a snag we can store the index to the instanceID vs bool. This will allow us to find it in the data frame
+// we need to know if a particular DGN has multiple instances. We need to know this BEFORE we create the instance.
+
 var dgnHasInstances map[uint32]bool
 var locker = sync2.RWMutex{}
 
 // GetRVCItem - get the RVC item for the given frame. If it does not exist create one, cache it and return it
 func GetRVCItem(f *RvcFrame) (*RvcItemIF, bool) {
+
 	var key = getInstanceKey(f)
 	locker.Lock()
 	defer locker.Unlock()
@@ -46,6 +50,8 @@ func init() {
 	dgnHasInstances[DGN_DC_DIMMER_STATUS_3] = true
 	dgnHasInstances[DGN_DC_SOURCE_STATUS_1_SPYDER] = true
 	dgnHasInstances[DGN_DC_SOURCE_STATUS_1] = true
+	dgnHasInstances[DGN_TANK_STATUS] = true
+	dgnHasInstances[DGN_AIR_CONDITIONER_STATUS] = true
 }
 
 // getInstanceKey - get the instance key for this frame. It will pull the instatnceID if we have one
@@ -55,7 +61,7 @@ func getInstanceKey(f *RvcFrame) DGNInstanceKey {
 	if hasInstance {
 		return DGNInstanceKey{dgn, f.Data[0]}
 	} else {
-		return DGNInstanceKey{dgn, 0}
+		return DGNInstanceKey{dgn, constants.DataNotAvailableUint8}
 	}
 
 }
@@ -90,6 +96,15 @@ func createRVCItem(f *RvcFrame) (RvcItemIF, bool) {
 			ret = &tankStatus{}
 			return ret, true
 		}
+
+	case DGN_AIR_CONDITIONER_STATUS:
+		{
+			var ret RvcItemIF
+			ret = &airConditionerStatus{}
+			return ret, true
+		}
+
 	}
+
 	return nil, false
 }

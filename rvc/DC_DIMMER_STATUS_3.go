@@ -119,65 +119,6 @@ func (r *DCDimmerStatus3) GetInstance() byte {
 	return r.deviceInstance
 }
 
-/*
-func (r *DCSourceStatus1) FieldUint8(f dataField) uint8 {
-	r.lockitem.RLock()
-	defer r.lockitem.RUnlock()
-	switch f.name {
-	case myFields[0].name:
-		return r.deviceInstance
-		break
-	case myFields[1].name:
-		return r.devicePriority
-		break
-	}
-	return NAuint8
-}
-*/
-
-func (r *DCDimmerStatus3) Fields() *[]dataField {
-	return &myFieldsDCDimmerStatus3
-}
-
-func (r *DCDimmerStatus3) FieldUint16(f dataField) uint16 {
-	r.RvcItem.lock.RLock()
-	defer r.RvcItem.lock.RUnlock()
-	return 0
-}
-
-func (r *DCDimmerStatus3) FieldUint32(f dataField) uint32 {
-	r.RvcItem.lock.RLock()
-	defer r.RvcItem.lock.RUnlock()
-	return 0
-}
-
-func (r *DCDimmerStatus3) FieldUint8(f dataField) uint8 {
-	r.RvcItem.lock.RLock()
-	defer r.RvcItem.lock.RUnlock() //var ret = r.RvcItem.FieldUint8(f)
-	//if ret == 0 {
-	//	return ret
-	//}
-	switch f {
-	case myFields[0]: // TODO - no good manual index like this is prone to error
-		return r.deviceInstance
-	case myFields[1]:
-		return r.group
-	}
-	return 0 // need to fix all these to be spec compliant (255?)
-
-}
-func (r *DCDimmerStatus3) FieldFloat64(f dataField) float64 {
-
-	r.lock.RLock()
-	defer r.lock.RUnlock()
-	switch f {
-	case myFields[2]:
-		return r.brightness
-		break
-	}
-	return 0
-}
-
 func (r *DCDimmerStatus3) Init(from *RvcFrame) {
 	r.lock.RLock()
 	defer r.lock.RUnlock()
@@ -187,8 +128,14 @@ func (r *DCDimmerStatus3) Init(from *RvcFrame) {
 	var dataBytes = &from.Data
 
 	//
-	(*r).deviceInstance = utils.GetByte(dataBytes, 0)
-
+	// test for bug - did instance change?
+	{
+		var tmp = utils.GetByte(dataBytes, 0)
+		if (*r).deviceInstance != tmp {
+			fmt.Printf("INSTANCE CHANGED!!! %d != %d\n", tmp, (*r).deviceInstance)
+		}
+		(*r).deviceInstance = utils.GetByte(dataBytes, 0)
+	}
 	// test for changed and if changed set last changed timestamp
 	var changed = false
 	{

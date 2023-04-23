@@ -3,6 +3,7 @@ package rvc
 import (
 	"fmt"
 	"math"
+	"rvctomqtt/constants"
 	"sync"
 	"time"
 )
@@ -56,49 +57,30 @@ func (i *RvcItem) GetLastChanged() time.Time {
 	return i.lastChanged
 }
 
-// GetFields - get a list of all the fieds for this item and the data tyoe of that field. This can be used to dynamically
-// query the item. Imagine some generic JSON publisher that uses this to publish data to a queue.
-// It may turn out that this is NOT needed and all we need to to use reflection to get all the public methods and get
-// fields/types based on those method names....
-func (i *RvcItem) Fields() *[]dataField {
-	return nil
-}
-
-// GetFieldUint8 - get the uint8 value of a field. Should only be called for fields that are represented as uint8.
-// Undefined if called on the wrong type
-func (i *RvcItem) FieldUint8(f dataField) uint8 {
-	return NAuint8
-}
-
-// GetFieldUint8 - get the uint8\16 value of a field. Should only be called for fields that are represented as uint16
-// Undefined if called on the wrong type
-func (i *RvcItem) FieldUint16(f dataField) uint16 {
-	return NAuint16
-}
-
-// GetFieldUint8 - get the uint32 value of a field. Should only be called for fields that are represented as uint32
-// Undefined if called on the wrong type
-func (i *RvcItem) FieldUint32(f dataField) uint32 {
-	return NAuint32
-}
-
-// GetFieldUint8 - get the float64 value of a field. Should only be called for fields that are represented as float64
-// Undefined if called on the wrong type
-func (i *RvcItem) FieldFloat64(f dataField) float64 {
-	return NAFloat64
+// GetInstance - many items have an instance. It's used enough that this base class supports it an we expect
+//
+//	"subclass" to override it. This also means that DataNotAvailableUint8 is a special constant that really means this
+//	DGN doesn't have instances
+func (i *RvcItem) GetInstance() byte {
+	return constants.DataNotAvailableUint8
 }
 
 // RvcItemIF = Get methods are exported.
 type RvcItemIF interface {
+	// GetName - the name of this DGN
 	GetName() string
 	GetDGN() uint32
+	// GetTimestamp - the timestamp of the data
 	GetTimestamp() time.Time
+	// GetLastChanged - the timestamp where we last saw a change. Note that some fields are not considered.
+	// instance is an example, this is because instance is part of the identifier. It's important that the cached
+	// instances of RCVItems works properly for this timestamp to be correct.
 	GetLastChanged() time.Time
-	Fields() *[]dataField
-	FieldUint8(f dataField) uint8
-	FieldUint16(f dataField) uint16
-	FieldUint32(f dataField) uint32
-	FieldFloat64(f dataField) float64
+
+	// GetInstance - get the instance number/id. If there is no instance then we return DataNotAvailableUint8
+	GetInstance() byte
+
+	// Init- init this item from the RVC frame. A "subclass" should give the parent an opportunity to init first.
 	Init(f *RvcFrame)
 }
 
@@ -111,5 +93,5 @@ func (r *RvcItem) Init(f *RvcFrame) {
 	r.dgn = uint32(f.DGNHigh()) << 8
 	r.dgn = uint32(f.DGNLow()) | r.dgn
 	r.name = DGNName(r.dgn)
-	fmt.Printf("INIT: RVCITEM: dgn:%d name: %s\n", r.dgn, r.name)
+	//fmt.Printf("INIT: RVCITEM: dgn:%d name: %s\n", r.dgn, r.name)
 }

@@ -1,7 +1,5 @@
 package rvc
 
-import "fmt"
-
 // func DGNName(rvcFrame *RvcFrame, dgn uint32) string {
 func DGNName(dgn uint32) string {
 	var ret string
@@ -725,7 +723,7 @@ func DGNName(dgn uint32) string {
 
 	}
 
-	fmt.Printf("DGN NAMES MAP RETURNING: %s\n", ret)
+	//fmt.Printf("DGN NAMES MAP RETURNING: %s\n", ret)
 	return ret
 
 }

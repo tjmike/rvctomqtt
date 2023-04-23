@@ -11,4 +11,7 @@ const (
 	CAN_SFF_MASK uint32 = 0x000007FF /* standard frame format (SFF) */
 	CAN_EFF_MASK uint32 = 0x1FFFFFFF /* extended frame format (EFF) */
 
+	DataNotAvailableUint8 uint8 = 255
+	OutOfRangeUint8       uint8 = 254
+	ReservedUint8         uint8 = 253
 )
