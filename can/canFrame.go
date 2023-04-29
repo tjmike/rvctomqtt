@@ -8,6 +8,10 @@ import (
 	"time"
 )
 
+// TODO/NOTE: This is really more of a socketCAN struct. It may make sense to make this
+//            strictly a CAN structure or define a CAN API for access so we can clearly separate
+//            CAN items from socket and make supporting a different platform easier. We don't have
+//            multiple platform now so much of this work will be deferred until that happens.
 // We want the CAN_XXX flags to be seen on all platforms so we don't use the
 // ones from the unix package.
 
@@ -39,6 +43,8 @@ import (
 type Frame struct {
 	Timestamp time.Time
 	// 32 bit CAN_ID + EFF/RTR/ERR flags
+
+	EFF_RTR_ERR_Flag uint8
 	// bit 0-28: CAN identifier (11/29 bit)
 	// bit 29: error message flag (ERR)
 	// bit 30: remote transmision request (RTR)
@@ -47,14 +53,15 @@ type Frame struct {
 	ID uint32
 	// Data length (0-8)
 	Length uint8
-	// these three bytes not used
+	// these three bytes not used (SOCKETCAN Bytes?)
 	Flags uint8
 	Res0  uint8
 	Res1  uint8
+
 	// data bytes - can have zero to max bytes
 	Data [constants.MaxFrameDataLength]uint8
 
-	// These are the raw message bytes. This is what we send to the driver as fread() takes bytes. It may be possible
+	// These are the raw message bytes. This is what we send to the driver (fread()) to populate  takes bytes. It may be possible
 	// send a struct of the right type that is (unsafely?) cast as bytes. Even intf that can be done, maybe using
 	// byte[] is more readable/understandable...
 	MessageBytes [constants.MAX_MESSAGE]byte
@@ -62,17 +69,17 @@ type Frame struct {
 
 // IsExtended - true intf this frame is extended format.
 func (f *Frame) IsExtended() bool {
-	return (f.ID & constants.CAN_EFF_FLAG) != 0
+	return (f.EFF_RTR_ERR_Flag & constants.CAN_EFF_FLAG2) != 0
 }
 
 // IsRTR - true intf this is a remote transmission request
 func (f *Frame) IsRTR() bool {
-	return (f.ID & constants.CAN_RTR_FLAG) != 0
+	return (f.EFF_RTR_ERR_Flag & constants.CAN_RTR_FLAG2) != 0
 }
 
 // IsERR - true intf this is an error frame
 func (f *Frame) IsERR() bool {
-	return (f.ID & constants.CAN_ERR_FLAG) != 0
+	return (f.EFF_RTR_ERR_Flag & constants.CAN_ERR_FLAG2) != 0
 }
 
 // CanID - This is just the canID without the additional flags. Either a 29 or 11 bit value.
@@ -106,7 +113,15 @@ func (msg *Frame) DataLength() uint8 {
 // so we pass in (a pointer to?) a function that provides that conversion for us.
 func (frame *Frame) BuildCanFrame(bytesTounit func([]byte) uint32) {
 	//fmt.Println("Build Can Frame (CAN)")
+	// Get the flags
+
 	frame.ID = bytesTounit(frame.MessageBytes[0:])
+
+	// get the flag bits
+	frame.EFF_RTR_ERR_Flag = uint8(frame.ID>>29) & constants.CAN_EFF_RTR_ERR_FLAG
+	// now clear the ID to be just the 29 but can message -
+	frame.ID = frame.ID & constants.CAN_EFF_MASK
+
 	frame.Length = (*frame).MessageBytes[4]
 	frame.Flags = (*frame).MessageBytes[5]
 	frame.Res0 = (*frame).MessageBytes[6]
@@ -126,6 +141,7 @@ func (frame *Frame) BuildCanFrame(bytesTounit func([]byte) uint32) {
 		}
 
 	}
+
 }
 
 func (frame *Frame) GetMessage() *[16]byte {
@@ -138,4 +154,66 @@ func (frame *Frame) BuildCanFrameX() {
 	// TODO this cant be here
 	fmt.Println("BUILD CAN FRAME X (CAN) - use platform specific method")
 	frame.BuildCanFrame(binary.LittleEndian.Uint32)
+
+}
+
+func (frame *Frame) SetCanMessage() {
+
+	// test frame - copy of original
+	//var frame = &Frame{}
+	//frame.Timestamp = frameX.Timestamp
+	//frame.ID = frameX.ID
+	//frame.Res0 = frameX.Res0
+	//frame.Res1 = frameX.Res1
+	//for i := 0; i < len(frame.Data); i++ {
+	//	frame.Data[i] = frameX.Data[i]
+	//}
+	//
+
+	// NOTE: This frame format is for socketCAN and may not be part of the CAN spec.
+	// From the socketCAN spec:
+	// struct can_frame {
+	//        canid_t can_id;  /* 32 bit CAN_ID + EFF/RTR/ERR flags */
+	//        union {
+	//                /* CAN frame payload length in byte (0 .. CAN_MAX_DLEN)
+	//                 * was previously named can_dlc so we need to carry that
+	//                 * name for legacy support
+	//                 */
+	//                __u8 len;
+	//                __u8 can_dlc; /* deprecated */
+	//        };
+	//        __u8    __pad;   /* padding */
+	//        __u8    __res0;  /* reserved / padding */
+	//        __u8    len8_dlc; /* optional DLC for 8 byte payload length (9 .. 15) */
+	//        __u8    data[8] __attribute__((aligned(8)));
+	//};
+
+	// Put the flags back : NOTE these flags in this int are really SocketCAN and not CAN specific - it may be better
+	// to have a "can" struct and  separate socketCan struct that extends it...
+	var idWithFlags = frame.ID
+	if frame.IsExtended() {
+		idWithFlags |= constants.CAN_EFF_FLAG
+	}
+	if frame.IsERR() {
+		idWithFlags |= constants.CAN_ERR_FLAG
+	}
+	if frame.IsRTR() {
+		idWithFlags |= constants.CAN_RTR_FLAG
+	}
+
+	binary.LittleEndian.PutUint32(frame.MessageBytes[0:], idWithFlags)
+	(*frame).MessageBytes[4] = frame.Length
+	(*frame).MessageBytes[5] = frame.Flags
+	(*frame).MessageBytes[6] = frame.Res0
+	(*frame).MessageBytes[7] = frame.Res1
+
+	var offset = len(frame.MessageBytes) - len(frame.Data)
+	for i := 0; i < len(frame.Data); i++ {
+		(*frame).MessageBytes[offset+i] = frame.Data[i]
+	}
+
+	// now lets just dump the original and old
+	//fmt.Printf("BUILD ORIG: %x\n", frameX.MessageBytes)
+	//fmt.Printf("BUILD REBU: %x\n", frame.MessageBytes)
+
 }

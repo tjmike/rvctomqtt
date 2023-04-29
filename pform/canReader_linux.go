@@ -24,6 +24,7 @@ import (
 func GetCANMessages(messagePool *pool.Pool, fromSocket, toSocket chan *intf.CanFrameIF) {
 
 	var socketInterface = "can0"
+	//var socketInterface = "vcan0"
 
 	// Find the interface we are intersted in by name
 	iface, err := net.InterfaceByName(socketInterface)
@@ -62,9 +63,9 @@ func GetCANMessages(messagePool *pool.Pool, fromSocket, toSocket chan *intf.CanF
 	for {
 		// get a canframe from the pool and get the by buffer
 		var canFrame *intf.CanFrameIF = (*messagePool).Get()
-		var bytes = (*canFrame).GetMessage()
 
-		// Get the next packet
+		var bytes = (*canFrame).GetMessage()
+		// Get the next message into the can raw bytes
 		_, err := f.Read(bytes[0:])
 
 		// TODO Handle Errors

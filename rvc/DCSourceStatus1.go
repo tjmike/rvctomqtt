@@ -28,8 +28,8 @@ type DCSourceStatus1 struct {
 func (i *DCSourceStatus1) String() string {
 	//var s = i.RvcItem.String()
 
-	return fmt.Sprintf("DGN: %x(%s) Instance: %d priority: %d voltage: %f current: %f",
-		i.dgn, i.GetName(), i.deviceInstance, i.devicePriority, i.voltage, i.current)
+	return fmt.Sprintf("DGN: %x(%s) SA: %d Instance: %d priority: %d voltage: %f current: %f",
+		i.dgn, i.GetName(), i.GetSourceAddress(), i.deviceInstance, i.devicePriority, i.voltage, i.current)
 	//return "ZZZXXX" + s + " " + t
 
 }

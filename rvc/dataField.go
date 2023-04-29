@@ -13,7 +13,7 @@ const (
 	VOLTAGE           FieldName = "voltage"
 	CURRENT           FieldName = "current"
 	group             FieldName = "group"
-	brightness        FieldName = "brightness"
+	brightness        FieldName = "desiredBrightness"
 	lock              FieldName = "lockitem"
 	overCurrentStatus FieldName = "overCurrentStatus"
 	enableStatus      FieldName = "enableStatus"

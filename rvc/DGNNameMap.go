@@ -370,6 +370,9 @@ func DGNName(dgn uint32) string {
 	case 0x1FEBD:
 		ret = "INVERTER_TEMPERATURE_STATUS"
 		break
+	case 0x1FDCB:
+		ret = "INVERTER_TEMPERATURE_STATUS2"
+		break
 	case 0x1FFCA:
 		ret = "CHARGER_AC_STATUS_1"
 		break

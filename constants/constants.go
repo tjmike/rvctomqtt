@@ -8,6 +8,14 @@ const (
 	CAN_EFF_FLAG uint32 = 0x80000000 /* EFF/SFF is set in the MSB */
 	CAN_RTR_FLAG uint32 = 0x40000000 /* remote transmission request */
 	CAN_ERR_FLAG uint32 = 0x20000000 /* error message frame */
+
+	// 3 MSBs
+	CAN_EFF_RTR_ERR_FLAG uint8 = 0x07 /* error message frame */
+
+	CAN_EFF_FLAG2 uint8 = 0x04
+	CAN_RTR_FLAG2 uint8 = 0x02
+	CAN_ERR_FLAG2 uint8 = 0x01
+
 	CAN_SFF_MASK uint32 = 0x000007FF /* standard frame format (SFF) */
 	CAN_EFF_MASK uint32 = 0x1FFFFFFF /* extended frame format (EFF) */
 

@@ -31,7 +31,7 @@ func TestCanFrame(t *testing.T) {
 		// for a test we want the 1st for raw bytes to be BACKWARDS - MS Byte first
 		// if all is well the ID will end up with the bits flipped.
 		// It's possible that this test may fail due to a platform change
-		MessageBytes: [constants.MAX_MESSAGE]byte{1, 0, 0, 0xE0, dataBytes, 0, 0, 0, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07},
+		MessageBytes: [constants.MAX_MESSAGE]byte{1, 0, 0, 0xA0, dataBytes, 0, 0, 0, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07},
 	}
 
 	// TODO Need to move this to a platform specific metod (in pform now -but need to split that out)
@@ -49,7 +49,7 @@ func TestCanFrame(t *testing.T) {
 	cf.BuildCanFrameX()
 	var canID = cf.CanID()
 	// the canID should be 11Buts
-	var expected uint32 = 0b011111111111
+	var expected uint32 = 0b0111_1111_1111
 	if expected != canID {
 		t.Errorf("11 but can message = expected = %x got %x ", expected, canID)
 
@@ -93,8 +93,8 @@ func checkTheFrame(t *testing.T, cf Frame, ts time.Time, dataBytes uint8) {
 	if !cf.IsExtended() {
 		t.Errorf("Expected extended frame but  was not set")
 	}
-	if !cf.IsRTR() {
-		t.Errorf("Expected RTR frame but  was not set")
+	if cf.IsRTR() {
+		t.Errorf("Expected NO RTR frame but  was not set")
 	}
 	if !cf.IsERR() {
 		t.Errorf("Expected ERROR frame but  was not set")
@@ -109,5 +109,73 @@ func checkTheFrame(t *testing.T, cf Frame, ts time.Time, dataBytes uint8) {
 	var expected = binary.LittleEndian.Uint32(expectedBytes[0:])
 	if cf.CanID() != expected {
 		t.Errorf("Expected CAN ID of 1 but got %x", cf.CanID())
+	}
+}
+
+func TestRebuildCanFrame(t *testing.T) {
+
+	var ts = time.Now()
+	var dataBytes uint8 = 8
+	var cf = Frame{
+		Timestamp:        ts,
+		EFF_RTR_ERR_Flag: 0,
+		ID:               0,
+		Length:           0,
+		Flags:            0,
+		Res0:             0,
+		Res1:             0,
+		Data:             [constants.MaxFrameDataLength]uint8{},
+		// for a test we want the 1st for raw bytes to be BACKWARDS - MS Byte first
+		// if all is well the ID will end up with the bits flipped.
+		// It's possible that this test may fail due to a platform change
+		MessageBytes: [constants.MAX_MESSAGE]byte{1, 0x36, 0x92, 0x41, dataBytes, 0, 0, 0, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07},
+	}
+	// TODO Need to move this to a platform specific metod (in pform now -but need to split that out)
+	cf.BuildCanFrame(binary.LittleEndian.Uint32)
+
+	rebuilt := initCanFrameState(cf, dataBytes)
+	// Build the raw message from the data in the frame and then check the results
+	rebuilt.SetCanMessage()
+	ensureMessageBytesMatch(t, rebuilt, cf)
+
+	cf.MessageBytes[3] = 0x81
+	cf.BuildCanFrame(binary.LittleEndian.Uint32)
+	rebuilt = initCanFrameState(cf, dataBytes)
+	rebuilt.SetCanMessage()
+	ensureMessageBytesMatch(t, rebuilt, cf)
+
+	cf.MessageBytes[3] = 0x21
+	cf.BuildCanFrame(binary.LittleEndian.Uint32)
+	rebuilt = initCanFrameState(cf, dataBytes)
+	rebuilt.SetCanMessage()
+	ensureMessageBytesMatch(t, rebuilt, cf)
+
+}
+
+func initCanFrameState(cf Frame, dataBytes uint8) Frame {
+	var rebuilt = Frame{
+		Timestamp:        cf.Timestamp,
+		EFF_RTR_ERR_Flag: cf.EFF_RTR_ERR_Flag,
+		ID:               cf.ID,
+		Length:           cf.Length,
+		Flags:            cf.Flags,
+		Res0:             cf.Res0,
+		Res1:             cf.Res1,
+		Data:             [8]uint8{},
+		MessageBytes:     [16]byte{},
+	}
+	for i := 0; i < int(dataBytes); i++ {
+		rebuilt.Data[i] = cf.Data[i]
+	}
+	return rebuilt
+}
+
+func ensureMessageBytesMatch(t *testing.T, rebuilt Frame, cf Frame) {
+	for i := 0; i < len(rebuilt.MessageBytes); i++ {
+		if rebuilt.MessageBytes[i] != cf.MessageBytes[i] {
+			t.Errorf("Message index %d expected %x got %x expectedFrame: %x rebuilt: %x",
+				i, cf.MessageBytes[i], rebuilt.MessageBytes[i],
+				cf.MessageBytes, rebuilt.MessageBytes)
+		}
 	}
 }

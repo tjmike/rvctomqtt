@@ -1,11 +1,15 @@
 package rvc
 
 const (
-	DGN_DC_SOURCE_STATUS_1        = 0x1FFFD
-	DGN_DC_SOURCE_STATUS_1_SPYDER = 0x10FFD
-	DGN_DC_DIMMER_STATUS_3        = 0x1FEDA
-	DGN_TANK_STATUS               = 0x1FFB7
-	DGN_AIR_CONDITIONER_STATUS    = 0x1FFE1
+	DGN_DC_SOURCE_STATUS_1            = 0x1FFFD
+	DGN_DC_SOURCE_STATUS_1_SPYDER     = 0x10FFD
+	DGN_DC_DIMMER_STATUS_3            = 0x1FEDA
+	DGN_DC_DIMMER_COMMAND_2           = 0x1FEDB
+	DGN_TANK_STATUS                   = 0x1FFB7
+	DGN_AIR_CONDITIONER_STATUS        = 0x1FFE1
+	DGN_AIR_CONDITIONER_COMMAND       = 0x1FFE0
+	DGN_INVERTER_TEMPERATURE_STATUS   = 0x1FEBD
+	DGN_INVERTER_TEMPERATURE_STATUS_2 = 0x1FDCB
 )
 
 /*
@@ -67,6 +71,19 @@ func init() {
 	DGNInstanceNames[DGNInstanceKey{DGN: DGN_DC_DIMMER_STATUS_3, Instance: 87}] = "Passenger Map"
 	DGNInstanceNames[DGNInstanceKey{DGN: DGN_DC_DIMMER_STATUS_3, Instance: 91}] = "Exterior Road"
 	DGNInstanceNames[DGNInstanceKey{DGN: DGN_DC_DIMMER_STATUS_3, Instance: 92}] = "Exterior Porch"
+
+	{
+		tmp := make(map[DGNInstanceKey]string)
+		// make map for dimmer comand based off status mapping
+		for k, v := range DGNInstanceNames {
+			k2 := DGNInstanceKey{DGN_DC_DIMMER_COMMAND_2, k.Instance}
+			tmp[k2] = v
+		}
+		// set the instances in the original map - we don't want to set values while we are iterating....
+		for k, v := range tmp {
+			DGNInstanceNames[k] = v
+		}
+	}
 	// 0 — Fresh water
 	//1 — Black waste (If only one waste tank is
 	//present, it shall be reported as Black.)

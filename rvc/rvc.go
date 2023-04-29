@@ -43,6 +43,9 @@ type RvcFrame struct {
 
 // For priority we already have GetPriority()
 
+func (msg *RvcFrame) SA() uint8 {
+	return msg.GetSourceAddress()
+}
 func (msg *RvcFrame) DGN() uint32 {
 	var ret uint32 = uint32(msg.DGNHigh())
 	ret = ret << 8
@@ -83,7 +86,6 @@ func (msg *RvcFrame) String() string {
 
 func (frame *RvcFrame) BuildCanFrameX() {
 	// TODO this cant be here
-	//fmt.Println("BUILD CAN FRAME X  (RVC) - use platform specific method")
 	frame.BuildCanFrame(binary.LittleEndian.Uint32)
 }
 

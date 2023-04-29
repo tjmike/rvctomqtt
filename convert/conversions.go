@@ -24,3 +24,13 @@ func ToDegreesC(in uint8) float64 {
 	var out = float64(in) / 10.0
 	return out
 }
+
+// -273 -> 1735 (0.03125 °C ) (1/32)
+func ToDegreesC16(in uint16) float64 {
+	var out = (float64(in) / 32) - 273
+	return out
+}
+
+func CelsiusToFahrenheit(in float64) float64 {
+	return (in * 1.8) + 32.0
+}

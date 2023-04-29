@@ -17,7 +17,7 @@ func TestDCDimmerStatus3(t *testing.T) {
 	raw[7] = 0
 	raw[8] = 0x01  // 0-instance
 	raw[9] = 0x11  // 1-group
-	raw[10] = 0x01 // 2-brightness
+	raw[10] = 0x01 // 2-desiredBrightness
 
 	//lockitem          uint2 // 3-(0,1)
 	//overCurrentStatus uint2 // 3-(2,3)
@@ -59,7 +59,7 @@ func TestDCDimmerStatus3(t *testing.T) {
 	{
 		var expected float64 = 0.5
 		if dcds.GetBrightness() != expected {
-			t.Errorf("Wrong brightness expected %f got %f", expected, dcds.GetBrightness())
+			t.Errorf("Wrong desiredBrightness expected %f got %f", expected, dcds.GetBrightness())
 		}
 	}
 	{

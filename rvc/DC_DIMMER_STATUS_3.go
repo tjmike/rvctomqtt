@@ -6,6 +6,7 @@ import (
 	"rvctomqtt/utils"
 )
 
+// todo - move to a types file
 type uint2 uint8
 
 // 0x1FEDA
@@ -28,71 +29,73 @@ type DCDimmerStatus3 struct {
 	masterMemoryVal   uint8 // 7
 }
 
-// TODO - this may be better as a map?
-//      - this seems too combersome to do over and over is there a better way to express fields
-
-var myFieldsDCDimmerStatus3 = []dataField{
-	{name: instance, fieldType: U8},            // 0
-	{name: group, fieldType: U8},               // 1
-	{name: brightness, fieldType: F64},         // 2 251 = Value is changing (ramp command) 252 = Output is Flashing
-	{name: lock, fieldType: BIT2},              // 3
-	{name: overCurrentStatus, fieldType: BIT2}, // 4
-	{name: enableStatus, fieldType: BIT2},      // 5
-	{name: delayDuration, fieldType: BIT2},     // 6
-	{name: lastCommand, fieldType: U8},         // 7
-	{name: interlockStatus, fieldType: BIT2},   // 8
-	{name: loadStatus, fieldType: BIT2},        // 9
-	{name: reserved, fieldType: BIT2},          // 10
-	{name: undercurrent, fieldType: BIT2},      // 11
-	{name: masterMemoryValue, fieldType: U8},   // 12
-}
-
-// interlockStatus   uint2 // 6 (0,1)
-//	loadStatus        uint2 //6 (2-3)
-//	reserved          uint2 // 6 (4-5)
-//	undercurrent      uint2 // 6 (6-7)
-
 func (i *DCDimmerStatus3) getInterlockStatus() uint2 {
+	i.lock.RLock()
+	defer i.lock.RUnlock()
 	return i.interlockStatus
 }
 
 func (i *DCDimmerStatus3) getLoadStatus() uint2 {
+	i.lock.RLock()
+	defer i.lock.RUnlock()
 	return i.loadStatus
 }
 
 func (i *DCDimmerStatus3) getReserved() uint2 {
+	i.lock.RLock()
+	defer i.lock.RUnlock()
 	return i.reserved
 }
 func (i *DCDimmerStatus3) getUnderCurrent() uint2 {
+	i.lock.RLock()
+	defer i.lock.RUnlock()
 	return i.undercurrent
 }
 func (i *DCDimmerStatus3) GetLastCommand() uint8 {
+	i.lock.RLock()
+	defer i.lock.RUnlock()
 	return i.lastCommand
 }
 func (i *DCDimmerStatus3) GetDelayDuration() uint8 {
+	i.lock.RLock()
+	defer i.lock.RUnlock()
 	return i.delayDuration
 }
 func (i *DCDimmerStatus3) GetEnableStatus() uint2 {
+	i.lock.RLock()
+	defer i.lock.RUnlock()
 	return i.enableStatus
 }
 func (i *DCDimmerStatus3) GetOverrideStatus() uint2 {
+	i.lock.RLock()
+	defer i.lock.RUnlock()
 	return i.overrideSatus
 }
 func (i *DCDimmerStatus3) GetOverCurrentStatus() uint2 {
+	i.lock.RLock()
+	defer i.lock.RUnlock()
 	return i.overCurrentStatus
 }
 func (i *DCDimmerStatus3) GetLockItem() uint2 {
+	i.lock.RLock()
+	defer i.lock.RUnlock()
 	return i.lockitem
 }
 
 func (i *DCDimmerStatus3) GetBrightness() float64 {
+	i.lock.RLock()
+	defer i.lock.RUnlock()
 	return i.brightness
 }
 
 func (i *DCDimmerStatus3) GetGroup() uint8 {
+	i.lock.RLock()
+	defer i.lock.RUnlock()
 	return i.group
 }
 func (i *DCDimmerStatus3) GetInstanceName() string {
+	i.lock.RLock()
+	defer i.lock.RUnlock()
 	var k = DGNInstanceKey{DGN: i.dgn, Instance: i.deviceInstance}
 	var n, ok = DGNInstanceNames[k]
 	if ok {
@@ -102,10 +105,14 @@ func (i *DCDimmerStatus3) GetInstanceName() string {
 	}
 }
 func (i *DCDimmerStatus3) String() string {
+	i.lock.RLock()
+	defer i.lock.RUnlock()
 	//var s = i.RvcItem.String()
 	var iname = i.GetInstanceName()
-	return fmt.Sprintf("DGN: %x (%s) Instance: %d (%s) group: %d brigntness: %f lockitem: %d overcurrent: %d enable: %d delayDuration: %d last %d interlock %d, load status %d reserved: %d undercurrent: %d memval: %d",
+	return fmt.Sprintf("%s DGN: %x (%s) SA: %d Instance: %d (%s) group: %d brigntness: %f lockitem: %d overcurrent: %d enable: %d delayDuration: %d last %d interlock %d, load status %d reserved: %d undercurrent: %d memval: %d",
+		i.GetTimestamp().Format("01-02-2006 15:04:05.000000"),
 		i.dgn, i.name,
+		i.GetSourceAddress(),
 		i.deviceInstance, iname, i.group, i.brightness, i.lockitem, i.overrideSatus, i.enableStatus, i.delayDuration,
 		i.lastCommand, i.interlockStatus, i.loadStatus, i.reserved, i.undercurrent, i.masterMemoryVal,
 	)
@@ -224,19 +231,5 @@ func (r *DCDimmerStatus3) Init(from *RvcFrame) {
 	if changed {
 		r.lastChanged = r.timestamp
 	}
-
-	//(*r).group = utils.GetByte(dataBytes, 1)
-	//(*r).brightness = convert.ToPercent(utils.GetByte(dataBytes, 2))
-	//(*r).lockitem = uint2(utils.GetBits(dataBytes, 3, 0, utils.GetMask(2)))
-	//(*r).overCurrentStatus = uint2(utils.GetBits(dataBytes, 3, 2, utils.GetMask(2)))
-	//(*r).overrideSatus = uint2(utils.GetBits(dataBytes, 3, 4, utils.GetMask(2)))
-	//(*r).enableStatus = uint2(utils.GetBits(dataBytes, 3, 6, utils.GetMask(2)))
-	//(*r).delayDuration = utils.GetByte(dataBytes, 4)
-	//(*r).lastCommand = utils.GetByte(dataBytes, 5)
-	//(*r).interlockStatus = uint2(utils.GetBits(dataBytes, 6, 0, utils.GetMask(2)))
-	//(*r).loadStatus = uint2(utils.GetBits(dataBytes, 6, 2, utils.GetMask(2)))
-	//(*r).reserved = uint2(utils.GetBits(dataBytes, 6, 4, utils.GetMask(2)))
-	//(*r).undercurrent = uint2(utils.GetBits(dataBytes, 6, 6, utils.GetMask(2)))
-	//(*r).masterMemoryVal = utils.GetByte(dataBytes, 7)
 
 }

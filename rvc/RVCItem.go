@@ -19,15 +19,21 @@ const (
 
 // RvcItem - the general uses case is to take some generic RVC message and turn it into a proper object.
 type RvcItem struct {
-	name        string    // Once created this does not change
-	dgn         uint32    // Once created this does not change
-	timestamp   time.Time // System timestamp for this message
-	lastChanged time.Time // timestamp of the last change - a sub class is expected to set this
+	name          string    // Once created this does not change
+	dgn           uint32    // Once created this does not change
+	sourceAddress uint8     // Source address (requester/sender?)
+	timestamp     time.Time // System timestamp for this message
+	lastChanged   time.Time // timestamp of the last change - a sub class is expected to set this
 
 	// have a mutex per parallel item is nice in that multiple items can be queried/manipulated in parallel
 	// is there some better approach though. the main case were we mutate the calue is when we're upating some
 	// Instance which may happen often - many times per minute
 
+	// TODO rather than have a mutex and all this locking - maybe we can use a channel. In order to pull that off we need
+	//      to understand how an "Init" would work where we have some "active" instance and we want to update its state
+	//      while insuring that others who may be also be querying the state get correct picture of things.
+	// Maybe there's some server goroutine that recieves set/get message requests. So there's 1 goroutine that maintains
+	// state and this goroutine is event driven - it simply blocks awaiting set/get requests.
 	lock sync.RWMutex
 }
 
@@ -55,6 +61,12 @@ func (i *RvcItem) GetLastChanged() time.Time {
 	i.lock.RLock()
 	defer i.lock.RUnlock()
 	return i.lastChanged
+}
+
+func (i *RvcItem) GetSourceAddress() uint8 {
+	i.lock.RLock()
+	defer i.lock.RUnlock()
+	return i.sourceAddress
 }
 
 // GetInstance - many items have an instance. It's used enough that this base class supports it an we expect
@@ -93,5 +105,6 @@ func (r *RvcItem) Init(f *RvcFrame) {
 	r.dgn = uint32(f.DGNHigh()) << 8
 	r.dgn = uint32(f.DGNLow()) | r.dgn
 	r.name = DGNName(r.dgn)
+	r.sourceAddress = f.GetSourceAddress()
 	//fmt.Printf("INIT: RVCITEM: dgn:%d name: %s\n", r.dgn, r.name)
 }

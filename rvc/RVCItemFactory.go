@@ -52,6 +52,7 @@ func init() {
 	dgnHasInstances[DGN_DC_SOURCE_STATUS_1] = true
 	dgnHasInstances[DGN_TANK_STATUS] = true
 	dgnHasInstances[DGN_AIR_CONDITIONER_STATUS] = true
+	dgnHasInstances[DGN_AIR_CONDITIONER_COMMAND] = true
 }
 
 // getInstanceKey - get the instance key for this frame. It will pull the instatnceID if we have one
@@ -84,6 +85,12 @@ func createRVCItem(f *RvcFrame) (RvcItemIF, bool) {
 			ret = &DCDimmerStatus3{}
 			return ret, true
 		}
+	case DGN_DC_DIMMER_COMMAND_2:
+		{
+			var ret RvcItemIF
+			ret = &DCDimmerCommand2{}
+			return ret, true
+		}
 	case DGN_DC_SOURCE_STATUS_1:
 		{
 			var ret RvcItemIF
@@ -101,6 +108,26 @@ func createRVCItem(f *RvcFrame) (RvcItemIF, bool) {
 		{
 			var ret RvcItemIF
 			ret = &airConditionerStatus{}
+			return ret, true
+		}
+
+	case DGN_AIR_CONDITIONER_COMMAND:
+		{
+			var ret RvcItemIF
+			ret = &airConditionerCommand{}
+			return ret, true
+		}
+
+	case DGN_INVERTER_TEMPERATURE_STATUS:
+		{
+			var ret RvcItemIF
+			ret = &inverterTemperatureStatus{}
+			return ret, true
+		}
+	case DGN_INVERTER_TEMPERATURE_STATUS_2:
+		{
+			var ret RvcItemIF
+			ret = &inverterTemperatureStatus2{}
 			return ret, true
 		}
 

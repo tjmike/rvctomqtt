@@ -17,6 +17,10 @@ import (
 // so there's a single Instance that exists and represents the current state at any given point in
 // time. We don't keep a handle to the RVC frame because we want to return it
 
+// TODO we need some means to SET and push state.... this lets us see the commands
+// 0x1FFE0
+type airConditionerCommand airConditionerStatus
+
 // 0x1FFE1
 type airConditionerStatus struct {
 	RvcItem
@@ -31,8 +35,10 @@ type airConditionerStatus struct {
 }
 
 func (i *airConditionerStatus) String() string {
-	return fmt.Sprintf("DGN: %x(%s) Instance: %d operatingModel: %d maxFanSpeed: %f maxOutputLevel: %f fanSpeed: %f acOutputLevel: %f deadBand %f, 2ndStagDeadBand2 %f",
-		i.dgn, i.GetName(), i.instance, i.operatingMode, i.maxFanSpeed, i.maxOutputLevel, i.fanSpeed,
+	return fmt.Sprintf("DGN: %x(%s) SA: %d Instance: %d operatingModel: %d maxFanSpeed: %f maxOutputLevel: %f fanSpeed: %f acOutputLevel: %f deadBand %f, 2ndStagDeadBand2 %f",
+		i.dgn, i.GetName(),
+		i.GetSourceAddress(),
+		i.instance, i.operatingMode, i.maxFanSpeed, i.maxOutputLevel, i.fanSpeed,
 		i.acOutputLevel, i.deadBand, i.secondStageDeadBand)
 }
 
@@ -56,6 +62,7 @@ func (r *airConditionerStatus) GetMaxOutputLevel() float64 {
 	defer r.lock.RUnlock()
 	return r.maxOutputLevel
 }
+
 func (r *airConditionerStatus) GetFanSpeed() float64 {
 	r.lock.RLock()
 	defer r.lock.RUnlock()
@@ -93,16 +100,6 @@ func (r *airConditionerStatus) Init(from *RvcFrame) {
 			changed = true
 		}
 		(*r).instance = tmp
-
-		//instance 0      uint8
-		//operatingMode 1      uint8   //0 automatic, manual
-		//maxFanSpeed    2     float64 // %
-		//maxOutputLevel  3    float64 // %
-		//fanSpeed        4    float64 // %
-		//acOutputLevel   5    float64 // %
-		//deadBand       6    float64 // Precision = 0.1 °C This is the amount over and under the set point that the AC will tolerate. A larger value reducescycling.
-		//secondStageDeadBand 7 float64 // Value range = 0 to 25.0 °C  Precision = 0.1 °C  This is the amount over the set point that will trigger a higher A/C output
-
 		tmp = utils.GetByte(dataBytes, 1)
 		if (*r).operatingMode != tmp {
 			changed = true

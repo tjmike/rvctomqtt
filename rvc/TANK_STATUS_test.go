@@ -60,7 +60,7 @@ func TestTankStatus(t *testing.T) {
 		{
 			var expected float64 = 0.5
 			if dcds.GetBrightness() != expected {
-				t.Errorf("Wrong brightness expected %f got %f", expected, dcds.GetBrightness())
+				t.Errorf("Wrong desiredBrightness expected %f got %f", expected, dcds.GetBrightness())
 			}
 		}
 		{

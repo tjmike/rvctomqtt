@@ -29,7 +29,7 @@ func main() {
 	var p = pool.NewPool(&frameFactoryInterface, 10)
 
 	go pform.GetRVCMessages(p, fromSocket, toSocket)
-	go handler.CanMessageHandler(fromSocket, toSocket)
+	go handler.RVCMessageHandler(fromSocket, toSocket)
 
 	for {
 		print("Sleep\n")

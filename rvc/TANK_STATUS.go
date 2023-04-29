@@ -98,8 +98,9 @@ func (i *tankStatus) String() string {
 	//var s = i.RvcItem.String()
 	var iname = i.GetInstanceName()
 
-	return fmt.Sprintf("DGN: %x (%s) Instance: %d (%s) level %f relativeLevel: %d resolution: %d absoluteLevel: %d tanSize: %d ",
+	return fmt.Sprintf("DGN: %x (%s) SA: %d Instance: %d (%s) level %f relativeLevel: %d resolution: %d absoluteLevel: %d tanSize: %d ",
 		i.dgn, i.name,
+		i.GetSourceAddress(),
 		i.instance, iname,
 		i.GetLevel(),
 		i.relativeLevel, i.resolution, i.absoluteLevel, i.tankSize)
