@@ -61,6 +61,7 @@ type Frame struct {
 	// data bytes - can have zero to max bytes
 	Data [constants.MaxFrameDataLength]uint8
 
+	// 4 bytes  = caID + flags, 1 by length, 3 bytes not used, up to 8 bytes payload
 	// These are the raw message bytes. This is what we send to the driver (fread()) to populate  takes bytes. It may be possible
 	// send a struct of the right type that is (unsafely?) cast as bytes. Even intf that can be done, maybe using
 	// byte[] is more readable/understandable...
@@ -157,6 +158,8 @@ func (frame *Frame) BuildCanFrameX() {
 
 }
 
+// SetCanMessage - set the CAN message from the data in this struct. Basically we're going backwards and are building
+// the frame from the split out fields.
 func (frame *Frame) SetCanMessage() {
 
 	// test frame - copy of original

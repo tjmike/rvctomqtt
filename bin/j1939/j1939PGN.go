@@ -17,7 +17,7 @@ type PGN struct {
 	page        bit // really one bit - we could NOT store and use a method against pgn
 	pduFormat   byte
 	pduSpecific byte
-	pgn         uint32 // the full PGN word
+	pgn         uint32 // the full PGN 10 but word
 }
 
 func (pgn *PGN) GetPDUFormat() byte {
@@ -26,35 +26,26 @@ func (pgn *PGN) GetPDUFormat() byte {
 func (pgn *PGN) GetPDUSpecific() byte {
 	return pgn.pduSpecific
 }
+func (pgn *PGN) GetPGN() uint32 {
+	return pgn.pgn
+}
 
-// func NewPGN(rawPGN uint32) PGN {
-func NewPGN(canFrame *can.Frame) PGN {
-	var rawPGN = (canFrame.ID & 0x03_ff_ff_00) >> 8
-
-	var reserved bit
-	if (rawPGN & PGN_RESERVED_MASK) != 0 {
-		reserved = 1
+// SetPGN - set the PGN from the info in the CAN frame
+func (pgn *PGN) SetPGN(canFrame *can.Frame) {
+	pgn.pgn = (canFrame.ID & 0x03_ff_ff_00) >> 8
+	if (pgn.pgn & PGN_RESERVED_MASK) != 0 {
+		pgn.reserved = 1
 	} else {
-		reserved = 0
+		pgn.reserved = 0
 	}
-
-	var page bit
-	if (rawPGN & PGN_PAGE_MASK) != 0 {
-		page = 1
+	if (pgn.pgn & PGN_PAGE_MASK) != 0 {
+		pgn.page = 1
 	} else {
-		page = 0
+		pgn.page = 0
 	}
+	pgn.pduSpecific = byte(pgn.pgn & 0x0ff)
+	pgn.pduFormat = byte(pgn.pgn >> 8 & 0x0ff)
 
-	var pduSpecific byte = byte(rawPGN & 0x0ff)
-	var pduFormat byte = byte(rawPGN >> 8 & 0x0ff)
-	var ret = PGN{
-		reserved:    reserved,
-		page:        page,
-		pduFormat:   pduFormat,
-		pduSpecific: pduSpecific,
-		pgn:         rawPGN,
-	}
-	return ret
 }
 
 func (pgn *PGN) IsReservedBitSet() bool {

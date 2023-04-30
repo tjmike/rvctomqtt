@@ -2,7 +2,6 @@ package j1939
 
 import (
 	"encoding/binary"
-	"fmt"
 	"rvctomqtt/can"
 )
 
@@ -38,19 +37,19 @@ type J1939Frame struct {
 	can.Frame
 }
 
-func CreateJ1939(can *can.Frame) J1939Frame {
-	var a = can.ID
-	fmt.Printf("a = %x", a)
-	var b = a & PRIORITY_MASK
-	var c = b >> PRIORITY_SHIFT
-
-	return J1939Frame{
-		priority:      byte(c), // byte((can.ID & PRIORITY_MASK) >> PRIORITY_SHIFT),
-		PGN:           NewPGN(can),
-		sourceAddress: byte(can.ID & 0xff),
-		Frame:         *can,
-	}
-}
+//func CreateJ1939(can *can.Frame) J1939Frame {
+//	var a = can.ID
+//	fmt.Printf("a = %x", a)
+//	var b = a & PRIORITY_MASK
+//	var c = b >> PRIORITY_SHIFT
+//
+//	return J1939Frame{
+//		priority:      byte(c), // byte((can.ID & PRIORITY_MASK) >> PRIORITY_SHIFT),
+//		PGN:           NewPGN(can),
+//		sourceAddress: byte(can.ID & 0xff),
+//		Frame:         *can,
+//	}
+//}
 
 func (f *J1939Frame) GetPriority() byte {
 	return f.priority
@@ -71,23 +70,37 @@ func (frame *J1939Frame) BuildCanFrame(bytesTounit func([]byte) uint32) {
 	frame.Frame.BuildCanFrame(bytesTounit)
 
 	// 29 bit message (or 11 bit if not extended. Were only considering extended right now
-	var a = frame.Frame.ID
+	var c = (frame.Frame.ID & PRIORITY_MASK) >> PRIORITY_SHIFT
 
-	var b = a & PRIORITY_MASK
-	var c = b >> PRIORITY_SHIFT
+	//var b = a & PRIORITY_MASK
+	//var c = b >> PRIORITY_SHIFT
 	frame.priority = byte(c)
-	// TODO - is this already allocated - can we just "fill it" if no - can we change it to be that way?
-	frame.PGN = NewPGN(&frame.Frame)
+
+	frame.PGN.SetPGN(&frame.Frame)
 	frame.sourceAddress = byte(frame.Frame.ID & 0xff)
 
-	frame.SetCanMessage()
+	// TODO should not be here - was this a test?
+	//frame.SetCanMessage()
 }
 
-// Set the raw message from the data in this frame
+// SetCanMessage - set the CAN message from the fields of the J1939 message. This just sets toe ID bits as the
+// the data payload bits are expected to be set by something that knows how to interpret them. In some cases it may
+// be that SetCanMessages does not init those fields because the message is read only.
 func (f *J1939Frame) SetCanMessage() {
-	fmt.Printf("BEF: %x\n", f.Frame.MessageBytes)
-	/*
+	// assume that the data bytes are already set. Some other code must be mapping fields back to data bytes
+	//
+	// 3 biy priority
+	var canID = (uint32(f.priority)) << PRIORITY_SHIFT
+	// 18 bit PGN
+	canID = canID | (f.PGN.GetPGN() << 8)
+	// 8 bit source address
+	canID = canID | uint32(f.sourceAddress)
 
+	// We need ro rebuild the CANID in the frame before we call its SetCanMessage. Note that we are leaving the
+	// the rew PHN value alone.
+	f.Frame.ID = canID
+	f.Frame.SetCanMessage()
+	/*
 		var v uint32 = uint32(f.sourceAddress)
 		v = v | uint32(f.PGN.GetPDUSpecific())<<8
 		v = v | uint32(f.PGN.GetPDUFormat())<<16

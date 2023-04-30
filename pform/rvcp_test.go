@@ -28,7 +28,7 @@ func TestBuildCanFrame(t *testing.T) {
 	//
 	//1  9    F    E   B      D    4    2
 
-	// We only work whith little edian
+	// We only work with little edian
 
 	var fullID uint32 = 0x99FEBD42
 	var tstVal = [constants.MAX_MESSAGE]uint8{0x99, 0xFE, 0xBD, 0x42, 0x08, 0x00, 0x00, 0x00, 0x01, 0x00, 0x26, 0x60, 0x27, 0xFF, 0xFF, 0xFF}
@@ -41,7 +41,9 @@ func TestBuildCanFrame(t *testing.T) {
 	//BuildCanFrame(&r)
 
 	var id = r.ID
-	var idExpected uint32 = 0x99FEBD42
+	// the ID is the canID and only has 29 bits we can recover the other 3 bits elsewhere.
+	//var idExpected uint32 = 0x99FEBD42
+	var idExpected uint32 = 0x19FEBD42
 	if id != idExpected {
 		t.Errorf("ID Wrong %x != %x", idExpected, id)
 	}
