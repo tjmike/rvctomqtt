@@ -13,6 +13,7 @@ import (
 	"unsafe"
 )
 
+// TODO: there is  J1939 support in the Linux kernel
 /**
  *
  * Listen for CAN messages on the can interface
@@ -90,6 +91,9 @@ func GetCANMessages(messagePool *pool.Pool, fromSocket, toSocket chan *intf.CanF
 			}
 			(*canFrame).SetTimeStamp(pktTime)
 		}
+
+		fmt.Printf("READ: %x\n", (*canFrame).GetMessage())
+
 		(*canFrame).BuildCanFrameX()
 		//fmt.Println((*canFrame).String())
 

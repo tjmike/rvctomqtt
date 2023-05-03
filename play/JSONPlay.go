@@ -324,19 +324,19 @@ func main2() {
 	var ts = time.Now()
 	var dataBytes uint8 = 8
 	var cf = can.Frame{
-		Timestamp: ts,
-		ID:        0,
-		Length:    0,
-		Flags:     0,
-		Res0:      0,
-		Res1:      0,
-		Data:      [constants.MaxFrameDataLength]uint8{},
+		ID:     0,
+		Length: 0,
+		Flags:  0,
+		Res0:   0,
+		Res1:   0,
+		Data:   [constants.MaxFrameDataLength]uint8{},
 		// for a test we want the 1st for raw bytes to be BACKWARDS - MS Byte first
 		// if all is well the ID will end up with the bits flipped.
 		// It's possible that this test may fail due to a platform change
 		// 0 = 0x77359400
 		MessageBytes: [constants.MAX_MESSAGE]byte{1, 0, 0, 0xE0, dataBytes, 0, 0, 0, 0x00, 0x01, 0x02, 0x03, 0x00, 0x94, 0x35, 0x77},
 	}
+	cf.SetTimeStamp(ts)
 
 	cf.BuildCanFrameX()
 	//	DC current:

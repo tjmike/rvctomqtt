@@ -13,7 +13,42 @@ import (
 // 0101 0000
 // 0110 0000
 
-func TestBusParseBits(t *testing.T) {
+func TestBuffSetBits(t *testing.T) {
+	//var foo = [constants.MaxFrameDataLength]byte{0x10, 0xC0, 0b00000000, 4, 5, 6, 7, 0}
+	var bar = [constants.MaxFrameDataLength]byte{0x0, 0x0, 0b00000000, 0, 0, 0, 0, 0}
+
+	//var a = 0b00_00_00_10
+	var aa uint8 = 0b10
+	//var b = 0b00_00_01_00
+	var bb uint8 = 0b01
+	//var c = 0b00_10_00_00
+	var cc uint8 = 0b10
+	//var d = 0b11_00_00_00
+	var dd uint8 = 0b11
+
+	SetBits(&bar, 2, 0, 0b11, aa)
+	if bar[2] != 0x02 {
+		t.Errorf("Expected set byte to be   %x but got %x", 0x02, bar[2])
+	}
+	// 0110
+	SetBits(&bar, 2, 2, 0b11, bb)
+	if bar[2] != 0x06 {
+		t.Errorf("Expected set byte to be   %x but got %x", 0x06, bar[2])
+	}
+
+	// 10_0110
+	SetBits(&bar, 2, 4, 0b11, cc)
+	if bar[2] != 0x26 {
+		t.Errorf("Expected set byte to be   %x but got %x", 0x26, bar[2])
+	}
+
+	// 1110_0110
+	SetBits(&bar, 2, 6, 0b11, dd)
+	if bar[2] != 0xE6 {
+		t.Errorf("Expected set byte to be   %x but got %x", 0xe6, bar[2])
+	}
+}
+func TestBuffParseBits(t *testing.T) {
 
 	var foo = [constants.MaxFrameDataLength]byte{0x10, 0xC0, 0b00101010, 4, 5, 6, 7, 0}
 	var bar = [constants.MaxFrameDataLength]byte{0x10, 0xC0, 0b00101010, 4, 5, 6, 7, 0}

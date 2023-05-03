@@ -74,7 +74,7 @@ func init() {
 
 	{
 		tmp := make(map[DGNInstanceKey]string)
-		// make map for dimmer comand based off status mapping
+		// make map for dimmer command based off status mapping
 		for k, v := range DGNInstanceNames {
 			k2 := DGNInstanceKey{DGN_DC_DIMMER_COMMAND_2, k.Instance}
 			tmp[k2] = v

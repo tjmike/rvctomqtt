@@ -1,6 +1,9 @@
 package rvc
 
-import "testing"
+import (
+	"rvctomqtt/constants"
+	"testing"
+)
 
 func TestDCDimmerStatus3(t *testing.T) {
 	var dcds = DCDimmerStatus3{}
@@ -63,7 +66,7 @@ func TestDCDimmerStatus3(t *testing.T) {
 		}
 	}
 	{
-		var expected uint2 = 1
+		var expected constants.Uint2 = 1
 		var got = dcds.GetLockItem()
 		if expected != got {
 			t.Errorf("Wrong Lock Item expected %x got %x", expected, got)
@@ -108,7 +111,7 @@ func TestDCDimmerStatus3(t *testing.T) {
 	//undercurrent      uint2 // 6 (6-7)
 	//raw[14] = 0b00 10 11 10
 	{
-		var expected uint2 = 2
+		var expected constants.Uint2 = 2
 		var got = dcds.getInterlockStatus()
 		if expected != got {
 			t.Errorf("Wrong interlock status expected %x got %x", expected, got)

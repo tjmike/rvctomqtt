@@ -67,9 +67,9 @@ func TestBuildCanFrame(t *testing.T) {
 
 func setUpRawTestMessage(ts time.Time, dat [constants.MAX_MESSAGE]uint8) can.Frame {
 	var r = can.Frame{
-		Timestamp:    ts,
 		MessageBytes: [constants.MAX_MESSAGE]uint8{},
 	}
+	r.SetTimeStamp(ts)
 
 	for i, v := range dat {
 		r.MessageBytes[i] = v

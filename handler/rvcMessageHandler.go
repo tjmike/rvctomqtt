@@ -30,7 +30,7 @@ func RVCMessageHandler(fromSocket, toSocket chan *intf.CanFrameIF) {
 			var dgn uint32 = uint32(rvcFrame.DGNHigh()) << 8
 			dgn = dgn | uint32(rvcFrame.DGNLow())
 
-			fmt.Printf("RAW FRAME: %s %x\n", rvcFrame.Timestamp.Format("01-02-2006 15:04:05.000000"), rvcFrame.MessageBytes)
+			fmt.Printf("RAW FRAME: %s %x\n", rvcFrame.GetTimeStamp().Format("01-02-2006 15:04:05.000000"), rvcFrame.MessageBytes)
 
 			// Get existing or create an ew RVCItem
 			var rvcItem, ok = rvc.GetRVCItem(rvcFrame)
@@ -121,7 +121,7 @@ func RVCMessageHandler(fromSocket, toSocket chan *intf.CanFrameIF) {
 
 				}
 			} else {
-				fmt.Printf("Could not create frame for dgn: %x\n", rvcFrame.DGN())
+				fmt.Printf("RVCMessageHandler: Could not create frame for dgn: %x\n", rvcFrame.DGN())
 			}
 			nseen := 1 + seen[dgn]
 			seen[dgn] = nseen

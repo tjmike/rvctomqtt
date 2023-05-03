@@ -16,8 +16,8 @@ const (
 	CAN_RTR_FLAG2 uint8 = 0x02
 	CAN_ERR_FLAG2 uint8 = 0x01
 
-	CAN_SFF_MASK uint32 = 0x000007FF /* standard frame format (SFF) */
-	CAN_EFF_MASK uint32 = 0x1FFFFFFF /* extended frame format (EFF) */
+	CAN_SFF_MASK uint32 = 0x000007FF    /* standard frame format (SFF) */
+	CAN_EFF_MASK uint32 = 0x1F_FF_FF_FF /* extended frame format (EFF) */
 
 	DataNotAvailableUint8 uint8 = 255
 	OutOfRangeUint8       uint8 = 254

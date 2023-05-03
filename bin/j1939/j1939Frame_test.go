@@ -1,7 +1,6 @@
 package j1939
 
 import (
-	"rvctomqtt/can"
 	"testing"
 )
 
@@ -53,20 +52,35 @@ func TestJ1939Frame(t *testing.T) {
 
 func TestBackwards(t *testing.T) {
 
-	var f = J1939Frame{
-		priority: 1,
-		PGN: PGN{
-			reserved:    0,
-			page:        1,
-			pduFormat:   0x44,
-			pduSpecific: 0x22,
-			pgn:         0,
-		},
-		sourceAddress: 0x66,
-		Frame:         can.Frame{},
-	}
+	var f = J1939Frame{}
+	f.priority = 1
+	f.PGN.pduFormat = 0x55
+	f.PGN.pduSpecific = 0x22
+	f.sourceAddress = 0xff
+	f.SetCanMessage()
+	//fmt.Printf("RAW=%x", f.GetMessage())
 
-	if f.GetPriority() != 1 {
-		t.Errorf("Wrong format, expected %d got %d\n", 1, f.GetPriority())
+	// TODO deal with edianness of the data - this is just hard coded
+	var got = f.GetMessage()[0]
+	var expected byte = 0xff
+	if got != expected {
+		t.Errorf("Wrong source addess = got %x expected %x", got, expected)
+	}
+	got = f.GetMessage()[1]
+	expected = 0x22
+	if got != expected {
+		t.Errorf("Wrong pdu specific addess = got %x expected %x", got, expected)
+	}
+	got = f.GetMessage()[2]
+	expected = 0x55
+	if got != expected {
+		t.Errorf("Wrong pdu format addess = got %x expected %x", got, expected)
+	}
+	//  3 bit priority 18 bit PGN 8 bit SA( 3,288, 8)
+
+	got = f.GetMessage()[3]
+	expected = 0x04 // priority is a 1 but the 2 LSBs of the byte are part of the PGN
+	if got != expected {
+		t.Errorf("Wrong priority = got %x expected %x", got, expected)
 	}
 }

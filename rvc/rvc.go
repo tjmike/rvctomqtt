@@ -71,7 +71,7 @@ func (msg *RvcFrame) DGNLow() uint8 {
 
 func (msg *RvcFrame) String() string {
 	return fmt.Sprintf("TS:%d - canID=%X DGNH = %x DGNL=%x ERR=%t RTR=%t EXT=%t Data Len=%d Data=%s RAW=%s", // DGN=%X SRCADDR=%X len=%d - % X" ,
-		msg.Timestamp.UnixNano(),
+		msg.GetTimeStamp().UnixNano(),
 		msg.CanID(),
 		msg.DGNHigh(),
 		msg.DGNLow(),

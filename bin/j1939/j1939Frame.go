@@ -54,9 +54,14 @@ type J1939Frame struct {
 func (f *J1939Frame) GetPriority() byte {
 	return f.priority
 }
-
+func (f *J1939Frame) SetPriority(p byte) {
+	f.priority = p
+}
 func (f *J1939Frame) GetSourceAddress() byte {
 	return f.sourceAddress
+}
+func (f *J1939Frame) SetSourceAddress(sa byte) {
+	f.sourceAddress = sa
 }
 
 func (frame *J1939Frame) BuildCanFrameX() {
@@ -89,13 +94,18 @@ func (frame *J1939Frame) BuildCanFrame(bytesTounit func([]byte) uint32) {
 func (f *J1939Frame) SetCanMessage() {
 	// assume that the data bytes are already set. Some other code must be mapping fields back to data bytes
 	//
+
+	// set the main PGN field
+	f.PGN.SetCanMessage()
+
 	// 3 biy priority
-	var canID = (uint32(f.priority)) << PRIORITY_SHIFT
+	var canID = uint32(f.GetPriority()) << PRIORITY_SHIFT
 	// 18 bit PGN
 	canID = canID | (f.PGN.GetPGN() << 8)
 	// 8 bit source address
 	canID = canID | uint32(f.sourceAddress)
 
+	// add back the priority
 	// We need ro rebuild the CANID in the frame before we call its SetCanMessage. Note that we are leaving the
 	// the rew PHN value alone.
 	f.Frame.ID = canID

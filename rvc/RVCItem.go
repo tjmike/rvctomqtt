@@ -17,11 +17,13 @@ const (
 	NAFloat64 float64 = math.MaxFloat64
 )
 
-// RvcItem - the general uses case is to take some generic RVC message and turn it into a proper object.
+// RvcItem - the general uses case is to take some generic RVC message and turn it into a proper object. All of these
+// objects will be based from RVCItem.
 type RvcItem struct {
-	name          string    // Once created this does not change
+	name          string    // DGN Name - TODO we could leave this a method and use a map to look it up
 	dgn           uint32    // Once created this does not change
 	sourceAddress uint8     // Source address (requester/sender?)
+	priority      uint8     // 3 bit priority
 	timestamp     time.Time // System timestamp for this message
 	lastChanged   time.Time // timestamp of the last change - a sub class is expected to set this
 
@@ -37,7 +39,27 @@ type RvcItem struct {
 	lock sync.RWMutex
 }
 
+func (i *RvcItem) Equals(o *RvcItem) bool {
+	if i.name != o.name {
+		return false
+	}
+	if i.dgn != o.dgn {
+		return false
+	}
+	if i.sourceAddress != o.sourceAddress {
+		return false
+	}
+	if i.priority != o.priority {
+		return false
+	}
+
+	// Don't consider timestamp / last changed
+	return true
+}
+
 func (i *RvcItem) String() string {
+	i.lock.RLock()
+	defer i.lock.RUnlock()
 	return fmt.Sprintf("name: %s DGN: %x timestamp %s", i.name, i.dgn, i.timestamp)
 }
 
@@ -74,6 +96,8 @@ func (i *RvcItem) GetSourceAddress() uint8 {
 //	"subclass" to override it. This also means that DataNotAvailableUint8 is a special constant that really means this
 //	DGN doesn't have instances
 func (i *RvcItem) GetInstance() byte {
+	i.lock.RLock()
+	defer i.lock.RUnlock()
 	return constants.DataNotAvailableUint8
 }
 
@@ -92,8 +116,16 @@ type RvcItemIF interface {
 	// GetInstance - get the instance number/id. If there is no instance then we return DataNotAvailableUint8
 	GetInstance() byte
 
+	GetPriority() byte
 	// Init- init this item from the RVC frame. A "subclass" should give the parent an opportunity to init first.
 	Init(f *RvcFrame)
+}
+
+func (i *RvcItem) GetPriority() uint8 {
+	i.lock.RLock()
+	defer i.lock.RUnlock()
+	return i.priority
+
 }
 
 // Init - initialize this struct from the provided RVC data frame. It is assume that the parent struct
@@ -101,10 +133,11 @@ type RvcItemIF interface {
 // We never want to hold references to the frame we are initializing from. Once we are initialized we expect to
 // give the frame back to be reused.
 func (r *RvcItem) Init(f *RvcFrame) {
-	r.timestamp = f.Timestamp
+	r.timestamp = f.GetTimeStamp()
 	r.dgn = uint32(f.DGNHigh()) << 8
 	r.dgn = uint32(f.DGNLow()) | r.dgn
 	r.name = DGNName(r.dgn)
 	r.sourceAddress = f.GetSourceAddress()
+	r.priority = f.GetPriority()
 	//fmt.Printf("INIT: RVCITEM: dgn:%d name: %s\n", r.dgn, r.name)
 }

@@ -1,8 +1,12 @@
 package rvc
 
-import "testing"
+import (
+	"fmt"
+	"rvctomqtt/constants"
+	"testing"
+)
 
-func TestDCDimmerCommand(t *testing.T) {
+func TestDCDimmer2Command(t *testing.T) {
 	var dcds = DCDimmerCommand2{}
 	var f = RvcFrame{}
 	var raw = f.GetMessage()
@@ -79,7 +83,7 @@ func TestDCDimmerCommand(t *testing.T) {
 		}
 	}
 	{
-		var expected uint2 = 0b11
+		var expected constants.Uint2 = 0b11
 		var got = dcds.GetInterlockStatus()
 		if expected != got {
 			t.Errorf("Wrong interlock status expected %x got %x", expected, got)
@@ -124,5 +128,43 @@ func TestDCDimmerCommand(t *testing.T) {
 	//reserved          uint2 // 6 (4-5)
 	//undercurrent      uint2 // 6 (6-7)
 	//raw[14] = 0b00 10 11 10
+
+}
+
+func TestDCDimmer2CreateFrame(t *testing.T) {
+
+	var c = DCDimmerCommand2{}
+	c.group = 0
+	c.delayDuration = 0
+	c.desiredBrightness = 100 //         1100 1000 128+64 192
+	c.deviceInstance = 2
+	c.dgn = DGN_DC_DIMMER_COMMAND_2 // 0x1FEDB
+	c.name = DGNtoName[c.dgn]
+	c.priority = 0x06
+	c.sourceAddress = 0x10
+
+	// DGN : 0x1FEDB
+	// PRI  : 6
+	//    1    9   f    e    d    b
+	// xxx1 1001 1111 1110 1101 1011
+	var f = c.CreateFrame()
+	// 00 00 00 00 00 00 00 00          02 00 c8 00 00 00 00 00
+
+	var f2 = RvcFrame{}
+	var bytes = f2.GetMessage()
+	for i := 0; i < len(bytes); i++ {
+		f2.GetMessage()[i] = f.GetMessage()[i]
+	}
+
+	f2.BuildCanFrameX()
+	var c2 = DCDimmerCommand2{}
+	c2.Init(&f2)
+
+	fmt.Printf("OUT = %x\n", f.MessageBytes)
+	fmt.Printf("OUT = %x\n", f2.MessageBytes)
+
+	if !c.Equals(&c2) {
+		t.Errorf("Initial and reconstructed Dimmer commands dont match %s != %s\n", c.String(), c2.String())
+	}
 
 }

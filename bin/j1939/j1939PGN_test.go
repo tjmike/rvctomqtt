@@ -60,4 +60,41 @@ func TestJ1939PGN(t *testing.T) {
 	if !pgn.IsPageBitSet() {
 		t.Error("page error expected true but got false")
 	}
+
+	// Test byte order , shifting and masking
+	in = 0xff_02_04_ff
+	var expected uint32 = 0x030204
+	canFrame = can.Frame{ID: in}
+	pgn = PGN{}
+	pgn.SetPGN(&canFrame)
+	var p = pgn.GetPGN()
+	if p != expected {
+		t.Errorf("Wrong PGN, expected %x got %x", expected, in)
+
+	}
+}
+
+func TestSetCanMessageJ1939PGN(t *testing.T) {
+
+	var p = PGN{}
+	// expect 0x01 11 ee
+	p.page = 1
+	p.pduSpecific = 0xee
+	p.pduFormat = 0x11
+	p.SetCanMessage()
+	var expected uint32 = 0x0111ee
+	var pgn = p.GetPGN()
+	if pgn != expected {
+		t.Errorf("Wrong PGN, expected %x got %x", expected, pgn)
+	}
+
+	p.pgn = 0
+	p.page = 0
+	p.reserved = 1
+	p.SetCanMessage()
+	expected = 0x0211ee
+	pgn = p.GetPGN()
+	if pgn != expected {
+		t.Errorf("Wrong PGN (page), expected %x got %x", expected, pgn)
+	}
 }

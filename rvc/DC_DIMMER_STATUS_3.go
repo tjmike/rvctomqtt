@@ -2,12 +2,12 @@ package rvc
 
 import (
 	"fmt"
+	"rvctomqtt/constants"
 	"rvctomqtt/convert"
 	"rvctomqtt/utils"
 )
 
 // todo - move to a types file
-type uint2 uint8
 
 // 0x1FEDA
 type DCDimmerStatus3 struct {
@@ -16,37 +16,37 @@ type DCDimmerStatus3 struct {
 	group          uint8   // 1
 	brightness     float64 // 2
 	// Consider keeping this a byte and then just having getters to fetch the correct bits
-	lockitem          uint2 // 3 (0,1)
-	overCurrentStatus uint2 // 3 (2,3)
-	overrideSatus     uint2 // 3 (4,5)
-	enableStatus      uint2 // 3 (6,7)
-	delayDuration     uint8 // 4
-	lastCommand       uint8 // 5
-	interlockStatus   uint2 // 6 (0,1)
-	loadStatus        uint2 //6 (2-3)
-	reserved          uint2 // 6 (4-5)
-	undercurrent      uint2 // 6 (6-7)
-	masterMemoryVal   uint8 // 7
+	lockitem          constants.Uint2 // 3 (0,1)
+	overCurrentStatus constants.Uint2 // 3 (2,3)
+	overrideSatus     constants.Uint2 // 3 (4,5)
+	enableStatus      constants.Uint2 // 3 (6,7)
+	delayDuration     uint8           // 4
+	lastCommand       uint8           // 5
+	interlockStatus   constants.Uint2 // 6 (0,1)
+	loadStatus        constants.Uint2 //6 (2-3)
+	reserved          constants.Uint2 // 6 (4-5)
+	undercurrent      constants.Uint2 // 6 (6-7)
+	masterMemoryVal   uint8           // 7
 }
 
-func (i *DCDimmerStatus3) getInterlockStatus() uint2 {
+func (i *DCDimmerStatus3) getInterlockStatus() constants.Uint2 {
 	i.lock.RLock()
 	defer i.lock.RUnlock()
 	return i.interlockStatus
 }
 
-func (i *DCDimmerStatus3) getLoadStatus() uint2 {
+func (i *DCDimmerStatus3) getLoadStatus() constants.Uint2 {
 	i.lock.RLock()
 	defer i.lock.RUnlock()
 	return i.loadStatus
 }
 
-func (i *DCDimmerStatus3) getReserved() uint2 {
+func (i *DCDimmerStatus3) getReserved() constants.Uint2 {
 	i.lock.RLock()
 	defer i.lock.RUnlock()
 	return i.reserved
 }
-func (i *DCDimmerStatus3) getUnderCurrent() uint2 {
+func (i *DCDimmerStatus3) getUnderCurrent() constants.Uint2 {
 	i.lock.RLock()
 	defer i.lock.RUnlock()
 	return i.undercurrent
@@ -61,22 +61,22 @@ func (i *DCDimmerStatus3) GetDelayDuration() uint8 {
 	defer i.lock.RUnlock()
 	return i.delayDuration
 }
-func (i *DCDimmerStatus3) GetEnableStatus() uint2 {
+func (i *DCDimmerStatus3) GetEnableStatus() constants.Uint2 {
 	i.lock.RLock()
 	defer i.lock.RUnlock()
 	return i.enableStatus
 }
-func (i *DCDimmerStatus3) GetOverrideStatus() uint2 {
+func (i *DCDimmerStatus3) GetOverrideStatus() constants.Uint2 {
 	i.lock.RLock()
 	defer i.lock.RUnlock()
 	return i.overrideSatus
 }
-func (i *DCDimmerStatus3) GetOverCurrentStatus() uint2 {
+func (i *DCDimmerStatus3) GetOverCurrentStatus() constants.Uint2 {
 	i.lock.RLock()
 	defer i.lock.RUnlock()
 	return i.overCurrentStatus
 }
-func (i *DCDimmerStatus3) GetLockItem() uint2 {
+func (i *DCDimmerStatus3) GetLockItem() constants.Uint2 {
 	i.lock.RLock()
 	defer i.lock.RUnlock()
 	return i.lockitem
@@ -179,49 +179,49 @@ func (r *DCDimmerStatus3) Init(from *RvcFrame) {
 	}
 
 	{
-		var tmp = uint2(utils.GetBits(dataBytes, 3, 0, utils.GetMask(2)))
+		var tmp = constants.Uint2(utils.GetBits(dataBytes, 3, 0, utils.GetMask(2)))
 		if (*r).lockitem != tmp {
 			changed = true
 		}
 		(*r).lockitem = tmp
 
-		tmp = uint2(utils.GetBits(dataBytes, 3, 2, utils.GetMask(2)))
+		tmp = constants.Uint2(utils.GetBits(dataBytes, 3, 2, utils.GetMask(2)))
 		if (*r).overCurrentStatus != tmp {
 			changed = true
 		}
 		(*r).overCurrentStatus = tmp
 
-		tmp = uint2(utils.GetBits(dataBytes, 3, 4, utils.GetMask(2)))
+		tmp = constants.Uint2(utils.GetBits(dataBytes, 3, 4, utils.GetMask(2)))
 		if (*r).overrideSatus != tmp {
 			changed = true
 		}
 		(*r).overrideSatus = tmp
 
-		tmp = uint2(utils.GetBits(dataBytes, 3, 6, utils.GetMask(2)))
+		tmp = constants.Uint2(utils.GetBits(dataBytes, 3, 6, utils.GetMask(2)))
 		if (*r).enableStatus != tmp {
 			changed = true
 		}
 		(*r).enableStatus = tmp
 
-		tmp = uint2(utils.GetBits(dataBytes, 6, 0, utils.GetMask(2)))
+		tmp = constants.Uint2(utils.GetBits(dataBytes, 6, 0, utils.GetMask(2)))
 		if (*r).interlockStatus != tmp {
 			changed = true
 		}
 		(*r).interlockStatus = tmp
 
-		tmp = uint2(utils.GetBits(dataBytes, 6, 2, utils.GetMask(2)))
+		tmp = constants.Uint2(utils.GetBits(dataBytes, 6, 2, utils.GetMask(2)))
 		if (*r).loadStatus != tmp {
 			changed = true
 		}
 		(*r).loadStatus = tmp
 
-		tmp = uint2(utils.GetBits(dataBytes, 6, 4, utils.GetMask(2)))
+		tmp = constants.Uint2(utils.GetBits(dataBytes, 6, 4, utils.GetMask(2)))
 		if (*r).reserved != tmp {
 			changed = true
 		}
 		(*r).reserved = tmp
 
-		tmp = uint2(utils.GetBits(dataBytes, 6, 6, utils.GetMask(2)))
+		tmp = constants.Uint2(utils.GetBits(dataBytes, 6, 6, utils.GetMask(2)))
 		if (*r).undercurrent != tmp {
 			changed = true
 		}

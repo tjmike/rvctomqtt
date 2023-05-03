@@ -41,24 +41,27 @@ import (
 // 5) Sends frame BACK over channel to be recycled
 
 type Frame struct {
-	Timestamp time.Time
+	timestamp time.Time // timestamp for this message
 	// 32 bit CAN_ID + EFF/RTR/ERR flags
 
-	EFF_RTR_ERR_Flag uint8
+	eFF_RTR_ERR_Flag uint8 // flags for 3 msbits
+
 	// bit 0-28: CAN identifier (11/29 bit)
 	// bit 29: error message flag (ERR)
 	// bit 30: remote transmision request (RTR)
 	// bit 31: extended frame format (EFF) (MSB)
 	// This is the canID INCLUDING the 3 MSB flags
 	ID uint32
+
 	// Data length (0-8)
 	Length uint8
-	// these three bytes not used (SOCKETCAN Bytes?)
+
+	// these three bytes not used (SOCKETCAN Bytes)
 	Flags uint8
 	Res0  uint8
 	Res1  uint8
 
-	// data bytes - can have zero to max bytes
+	// data bytes - can have zero to max bytes refer to length field for actual size
 	Data [constants.MaxFrameDataLength]uint8
 
 	// 4 bytes  = caID + flags, 1 by length, 3 bytes not used, up to 8 bytes payload
@@ -68,22 +71,23 @@ type Frame struct {
 	MessageBytes [constants.MAX_MESSAGE]byte
 }
 
-// IsExtended - true intf this frame is extended format.
+// IsExtended - true if this frame is extended format.
 func (f *Frame) IsExtended() bool {
-	return (f.EFF_RTR_ERR_Flag & constants.CAN_EFF_FLAG2) != 0
+	return (f.eFF_RTR_ERR_Flag & constants.CAN_EFF_FLAG2) != 0
 }
 
 // IsRTR - true intf this is a remote transmission request
 func (f *Frame) IsRTR() bool {
-	return (f.EFF_RTR_ERR_Flag & constants.CAN_RTR_FLAG2) != 0
+	return (f.eFF_RTR_ERR_Flag & constants.CAN_RTR_FLAG2) != 0
 }
 
 // IsERR - true intf this is an error frame
 func (f *Frame) IsERR() bool {
-	return (f.EFF_RTR_ERR_Flag & constants.CAN_ERR_FLAG2) != 0
+	return (f.eFF_RTR_ERR_Flag & constants.CAN_ERR_FLAG2) != 0
 }
 
 // CanID - This is just the canID without the additional flags. Either a 29 or 11 bit value.
+// NOTE that 11 bit values have not been tested
 func (f *Frame) CanID() uint32 {
 	if f.IsExtended() {
 		return f.ID & constants.CAN_EFF_MASK
@@ -92,9 +96,13 @@ func (f *Frame) CanID() uint32 {
 	}
 }
 
+func (msg *Frame) SetEFF_RTR_ERR_Flag(f uint8) {
+	msg.eFF_RTR_ERR_Flag = f & 0x07
+}
+
 func (msg *Frame) String() string {
 	return fmt.Sprintf("TS:%d - canID=%X ERR=%t RTR=%t EXT=%t Data Len=%d Data=%s RAW=%s", // DGN=%X SRCADDR=%X len=%d - % X" ,
-		msg.Timestamp.UnixNano(),
+		msg.GetTimeStamp().UnixNano(),
 		msg.CanID(),
 		msg.IsERR(),
 		msg.IsRTR(),
@@ -119,7 +127,7 @@ func (frame *Frame) BuildCanFrame(bytesTounit func([]byte) uint32) {
 	frame.ID = bytesTounit(frame.MessageBytes[0:])
 
 	// get the flag bits
-	frame.EFF_RTR_ERR_Flag = uint8(frame.ID>>29) & constants.CAN_EFF_RTR_ERR_FLAG
+	frame.eFF_RTR_ERR_Flag = uint8(frame.ID>>29) & constants.CAN_EFF_RTR_ERR_FLAG
 	// now clear the ID to be just the 29 but can message -
 	frame.ID = frame.ID & constants.CAN_EFF_MASK
 
@@ -149,7 +157,10 @@ func (frame *Frame) GetMessage() *[16]byte {
 	return &frame.MessageBytes
 }
 func (frame *Frame) SetTimeStamp(t time.Time) {
-	frame.Timestamp = t
+	frame.timestamp = t
+}
+func (frame *Frame) GetTimeStamp() time.Time {
+	return frame.timestamp
 }
 func (frame *Frame) BuildCanFrameX() {
 	// TODO this cant be here
@@ -164,7 +175,7 @@ func (frame *Frame) SetCanMessage() {
 
 	// test frame - copy of original
 	//var frame = &Frame{}
-	//frame.Timestamp = frameX.Timestamp
+	//frame.timestamp = frameX.timestamp
 	//frame.ID = frameX.ID
 	//frame.Res0 = frameX.Res0
 	//frame.Res1 = frameX.Res1

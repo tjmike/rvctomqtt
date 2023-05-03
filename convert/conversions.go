@@ -19,6 +19,16 @@ func ToPercent(in uint8) float64 {
 	var out = float64(in) / 2
 	return out
 }
+func FromPercent(in float64) uint8 {
+	// The max range for percent is 0-125 so we clip to that range before conversion
+	var clipped = in
+	if clipped > 125 {
+		clipped = 125
+	} else if clipped < 0 {
+		clipped = 0
+	}
+	return uint8(clipped * 2)
+}
 
 func ToDegreesC(in uint8) float64 {
 	var out = float64(in) / 10.0

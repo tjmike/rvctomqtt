@@ -64,7 +64,7 @@ func GetCANMessages(messagePool *pool.Pool, fromSocket, toSocket chan *intf.CanF
 				(*f).GetMessage()[15] = 0xff
 			}
 			(*f).BuildCanFrameX()
-			//m.Timestamp = time.Now()
+			//m.timestamp = time.Now()
 			//m.MessageBytes[0] = 1
 			// we've read the frame and are now sending to the channel
 			fromSocket <- f

@@ -132,9 +132,20 @@ func GetBits(buf *[constants.MaxFrameDataLength]byte, byteOffset byte, bitPos by
 	return ret
 }
 
+// take the provided value and apply the provided mask and shift the bits to the left
+func SetBits[V uint8 | constants.Uint2](buf *[constants.MaxFrameDataLength]byte, byteOffset byte, bitPos byte, mask byte, val V) {
+
+	var masked = (byte(val) & mask) << bitPos
+	buf[byteOffset] = buf[byteOffset] | masked
+}
+
 // GetByte - get the specified byte from the buffer, no error checking is performed
 func GetByte(buf *[constants.MaxFrameDataLength]byte, byteOffset byte) byte {
 	return buf[byteOffset]
+}
+
+func SetByte(buf *[constants.MaxFrameDataLength]byte, byteOffset byte, val byte) {
+	buf[byteOffset] = val
 }
 
 // Getuint16 - get a 16 bit unsigned from the buffer. These are always byte aligned and always built assuming little edian

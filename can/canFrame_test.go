@@ -21,7 +21,7 @@ func TestCanFrame(t *testing.T) {
 
 	var dataBytes uint8 = 4
 	var cf = Frame{
-		Timestamp: ts,
+		timestamp: ts,
 		ID:        0,
 		Length:    0,
 		Flags:     0,
@@ -64,15 +64,15 @@ func checkTheFrame(t *testing.T, cf Frame, ts time.Time, dataBytes uint8) {
 		t.Errorf("message bytes don't match.  %x got %x ", msg, cf.MessageBytes)
 	}
 
-	if !ts.Equal(cf.Timestamp) {
-		t.Errorf("Timestamp does not match. Expectd %s got %s ", ts, cf.Timestamp)
+	if !ts.Equal(cf.GetTimeStamp()) {
+		t.Errorf("timestamp does not match. Expectd %s got %s ", ts, cf.GetTimeStamp())
 	}
 
 	ts = ts.Add(time.Second)
 	cf.SetTimeStamp(ts)
 
-	if !ts.Equal(cf.Timestamp) {
-		t.Errorf("Timestamp does not match. Expectd %s got %s ", ts, cf.Timestamp)
+	if !ts.Equal(cf.GetTimeStamp()) {
+		t.Errorf("timestamp does not match. Expectd %s got %s ", ts, cf.GetTimeStamp())
 	}
 
 	if cf.DataLength() != dataBytes {
@@ -117,8 +117,8 @@ func TestRebuildCanFrame(t *testing.T) {
 	var ts = time.Now()
 	var dataBytes uint8 = 8
 	var cf = Frame{
-		Timestamp:        ts,
-		EFF_RTR_ERR_Flag: 0,
+		timestamp:        ts,
+		eFF_RTR_ERR_Flag: 0,
 		ID:               0,
 		Length:           0,
 		Flags:            0,
@@ -154,8 +154,8 @@ func TestRebuildCanFrame(t *testing.T) {
 
 func initCanFrameState(cf Frame, dataBytes uint8) Frame {
 	var rebuilt = Frame{
-		Timestamp:        cf.Timestamp,
-		EFF_RTR_ERR_Flag: cf.EFF_RTR_ERR_Flag,
+		timestamp:        cf.GetTimeStamp(),
+		eFF_RTR_ERR_Flag: cf.eFF_RTR_ERR_Flag,
 		ID:               cf.ID,
 		Length:           cf.Length,
 		Flags:            cf.Flags,
