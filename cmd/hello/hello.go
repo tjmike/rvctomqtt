@@ -18,18 +18,14 @@ func main() {
 	// Listen on this to process the raw can message
 	fromSocket := make(chan *intf.CanFrameIF, 32)
 
-	// When done with the message - give it back to the socket listener
-	toSocket := make(chan *intf.CanFrameIF, 32)
-
 	// seems like we must be explicit with the interface - we can't pass the item
 	// that implements it
 	//var frameFactoryInterface intf.CanFrameFactory = &can.CanFrameFactory{}
 	var frameFactoryInterface intf.CanFrameFactory = &rvc.RVCFrameFactory{}
-
 	var p = pool.NewPool(&frameFactoryInterface)
 
-	go pform.GetRVCMessages(p, fromSocket, toSocket)
-	go handler.RVCMessageHandler(fromSocket, toSocket)
+	go pform.GetRVCMessages(p, fromSocket)
+	go handler.RVCMessageHandler(fromSocket, p)
 
 	for {
 		print("Sleep\n")

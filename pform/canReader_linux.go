@@ -22,7 +22,7 @@ import (
  * toSocket   - when a socket message can be reclaimed it will be returned via this channel
  *
  */
-func GetCANMessages(messagePool *pool.Pool, fromSocket, toSocket chan *intf.CanFrameIF) {
+func GetCANMessages(messagePool *pool.Pool, fromSocket chan *intf.CanFrameIF) {
 
 	var socketInterface = "can0"
 	//var socketInterface = "vcan0"
@@ -104,16 +104,6 @@ func GetCANMessages(messagePool *pool.Pool, fromSocket, toSocket chan *intf.CanF
 
 		// Send the frame to the channel
 		fromSocket <- canFrame
-		/// XXX END PROCESS FRAOM
-	bufloop:
-		for {
-			select {
-			case item := <-toSocket:
-				messagePool.ReturnToPool(item)
-			default:
-				break bufloop
-			}
-		}
 	}
 	f.Close()
 }

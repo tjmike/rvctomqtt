@@ -12,7 +12,7 @@ import (
 	"time"
 )
 
-func GetCANMessages(messagePool *pool.Pool, fromSocket, toSocket chan *intf.CanFrameIF) {
+func GetCANMessages(messagePool *pool.Pool, fromSocket chan *intf.CanFrameIF) {
 	fmt.Printf("IMPLEMENT ME\n")
 	//XXX var m = &rvccan.Frame{}
 
@@ -71,27 +71,6 @@ func GetCANMessages(messagePool *pool.Pool, fromSocket, toSocket chan *intf.CanF
 			time.Sleep(time.Millisecond * 5)
 
 		}
-		// we've handed to data off to the from socket channel when the processing is done it will be sent
-		// back on the to channel. This ensures that all the pool management is done in a single thread.
-
-	bufloop:
-		for {
-			select {
-			// we get the frame from the channel
-			case item := <-toSocket:
-				{
-					// process the frame
-					time.Sleep(time.Second)
-					// and give it back to the pool
-					messagePool.ReturnToPool(item)
-					//mm = *item
-				}
-			default:
-				break bufloop
-			}
-
-		}
-
 	}
 
 }

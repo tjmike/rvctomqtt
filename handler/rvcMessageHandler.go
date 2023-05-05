@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"reflect"
 	"rvctomqtt/intf"
+	"rvctomqtt/pool"
 	"rvctomqtt/rvc"
 	"strings"
 	"time"
@@ -12,7 +13,7 @@ import (
 
 // RVCMessageHandler - we expect to see RvcFrames here. For now we leave the channel interface as can frames and just
 // ignore data if it's not an RVC frame.
-func RVCMessageHandler(fromSocket, toSocket chan *intf.CanFrameIF) {
+func RVCMessageHandler(fromSocket chan *intf.CanFrameIF, pool *pool.Pool) {
 	fmt.Printf("############################### HANDLER #####################\n")
 	var nmsg uint32 = 0
 
@@ -138,8 +139,9 @@ func RVCMessageHandler(fromSocket, toSocket chan *intf.CanFrameIF) {
 			}
 		}
 
-		// We're don with this message. Send it back so it can be recycled.
-		toSocket <- data
+		// We're don with this message, put it back into the pool
+		(*pool).ReturnToPool(data)
+
 		nmsg++
 	}
 }

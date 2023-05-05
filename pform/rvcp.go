@@ -18,8 +18,8 @@ func Doit() {
 	doit()
 }
 
-func GetRVCMessages(pool *pool.Pool, fromSocket, toSocket chan *intf.CanFrameIF) {
-	GetCANMessages(pool, fromSocket, toSocket)
+func GetRVCMessages(pool *pool.Pool, fromSocket chan *intf.CanFrameIF) {
+	GetCANMessages(pool, fromSocket)
 }
 
 func ByteToUint() func([]byte) uint32 {
