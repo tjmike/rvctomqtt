@@ -85,7 +85,7 @@ func (i *DCDimmerCommand2) SetDGN(dgn uint32) {
 	i.lock.RLock()
 	defer i.lock.RUnlock()
 	i.dgn = dgn
-	i.name = DGNtoName[dgn]
+	i.name = dGNtoName[dgn]
 }
 
 func (i *DCDimmerCommand2) SetSourceAddress(sa uint8) {
@@ -250,7 +250,7 @@ func (i *DCDimmerCommand2) String() string {
 
 	return fmt.Sprintf("%s DGN: %x (%s) SA: %d Instance: %d (%s) group: %d brigntness: %f command: %d lockitem: %d res1: %d res2: %d res3: %d rampTime %f reserved %d",
 		i.GetTimestamp().Format("01-02-2006 15:04:05.000000"),
-		i.GetDGN(), DGNtoName[i.GetDGN()],
+		i.GetDGN(), dGNtoName[i.GetDGN()],
 		i.GetSourceAddress(),
 		i.deviceInstance,
 		i.GetInstanceName(),
@@ -266,50 +266,6 @@ func (i *DCDimmerCommand2) String() string {
 
 }
 
-/*
-func createMessage() *RvcFrame {
-
-		// 29 bit message
-		var priority uint8 = 1 // 3 bits
-		var reserved uint8 = 0 // 1 bit
-
-		var dgnHigh uint16 = 0 // 9 bits
-		var dgnLow uint8 = 0   // 8 bits
-		var sa uint8 = 0       // 8      // THIS WILL HAVE TO BE NEGOTIATED AT THE BEGINNING
-
-		// reverse
-		//deviceInstance    byte    // 0
-		//group             uint8   // 1
-		//desiredBrightness float64 // 2 (%)
-		//command           uint8   // 3
-		//delayDuration     uint8   // 4 seconds
-		//
-		//interlockStatus uint2   // 5 (0,1)
-		//reserved1       uint2   // 5 (2-3)
-		//reserved2       uint2   // 5 (4-5)
-		//reserved3       uint2   // 5 (6-7)
-		//rampTime        float64 // seconds (0.1) 0-25 seconds
-		//reserved        uint8   //
-
-		can.Frame{
-			timestamp:    time.Time{},
-			ID:           0,
-			Length:       0,
-			Flags:        0,
-			Res0:         0,
-			Res1:         0,
-			Data:         [8]uint8{},
-			MessageBytes: [16]byte{},
-		}
-
-		// create an RVC message from a CAN message
-		var j = j1939.J1939Frame{
-			PGN:   j1939.PGN{},
-			Frame: can.Frame{},
-		}
-		var v = RvcFrame{}
-	}
-*/
 func (r *DCDimmerCommand2) GetSourceAddress() uint8 {
 	r.lock.Lock()
 	defer r.lock.Unlock()

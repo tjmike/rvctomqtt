@@ -29,21 +29,22 @@ func main() {
 
 		var dmr = rvc.DCDimmerCommand2{}
 
+		// TODO - this "device" should probably get a source address
 		dmr.SetSourceAddress(153)
 
 		// TODO -  need command constants
 		dmr.SetCommand(5)
 
 		dmr.SetDesiredBringhtness(100)
-		dmr.SetGroup(0xff)
+		dmr.SetGroup(rvc.RVC_DATA_NOT_AVAILABLE)
 		dmr.SetDesiredBringhtness(100)
-		dmr.SetInstance(14)
+		dmr.SetInstance(rvc.INSTANCE_LIGHT_PASSENGER_TASK)
 
 		dmr.SetPriority(0x06)
 		dmr.SetDGN(rvc.DGN_DC_DIMMER_COMMAND_2)
-		dmr.SetDelayDuration(255)
-		dmr.SetReserved(255)
-		dmr.SetRampTime(255)
+		dmr.SetDelayDuration(rvc.RVC_DATA_NOT_AVAILABLE)
+		dmr.SetReserved(rvc.RVC_DATA_NOT_AVAILABLE)
+		dmr.SetRampTime(25.5)
 
 		var f = dmr.CreateFrame()
 

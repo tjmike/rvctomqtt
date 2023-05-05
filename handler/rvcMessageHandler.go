@@ -85,7 +85,7 @@ func RVCMessageHandler(fromSocket, toSocket chan *intf.CanFrameIF) {
 								if strings.HasPrefix(xmname, "Get") {
 									var methodOutputDataType = xmtype.Out(0).Name()
 
-									if methodOutputDataType == "uint8" || methodOutputDataType == "uint2" || methodOutputDataType == "uint16" || methodOutputDataType == "uint32" {
+									if methodOutputDataType == "uint8" || methodOutputDataType == "Uint2" || methodOutputDataType == "uint16" || methodOutputDataType == "uint32" {
 										var XXX = reflectedValue.Method(i).Call(inputs)
 										var yyy = XXX[0].Uint()
 										fmt.Printf("\t\t%s(%s)=%d\n", xmname, methodOutputDataType, yyy)
@@ -109,7 +109,7 @@ func RVCMessageHandler(fromSocket, toSocket chan *intf.CanFrameIF) {
 										var yyy = XXX[0].Float()
 										fmt.Printf("\t\t%s(%s)=%f\n", xmname, methodOutputDataType, yyy)
 									} else {
-										fmt.Printf("\t\t(UNSUPPORTED TYPE)   name = %s = %s \n", xmname, methodOutputDataType)
+										fmt.Printf("\t\t(UNSUPPORTED TYPE)   name = %s type = %s \n", xmname, methodOutputDataType)
 									}
 								}
 							}

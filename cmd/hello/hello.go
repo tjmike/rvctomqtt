@@ -26,7 +26,7 @@ func main() {
 	//var frameFactoryInterface intf.CanFrameFactory = &can.CanFrameFactory{}
 	var frameFactoryInterface intf.CanFrameFactory = &rvc.RVCFrameFactory{}
 
-	var p = pool.NewPool(&frameFactoryInterface, 10)
+	var p = pool.NewPool(&frameFactoryInterface)
 
 	go pform.GetRVCMessages(p, fromSocket, toSocket)
 	go handler.RVCMessageHandler(fromSocket, toSocket)

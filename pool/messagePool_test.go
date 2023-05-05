@@ -9,27 +9,26 @@ import (
 )
 
 func TestMessagePool(t *testing.T) {
-	var ps int = 10
 	var m = myMessageFactory{}
 	var ctf intf.CanFrameFactory = &m
-	var pool = NewPool(&ctf, ps)
+	var pool = NewPool(&ctf)
 
-	var sz = pool.size()
-
-	if !((sz) == ps) {
-		t.Errorf("Wrong Pool size. Expected %d got %d", ps, sz)
-	}
+	var sz = 10
+	//var sz = pool.size()
+	//if !((sz) == ps) {
+	//	t.Errorf("Wrong Pool size. Expected %d got %d", ps, sz)
+	//}
 
 	for i := 0; i < sz; i++ {
 		pool.Get()
 	}
 
-	if !(pool.size() == 0) {
-		t.Errorf("Wrong Pool size. Expected %d got %d", 0, sz)
-	}
+	//if !(pool.size() == 0) {
+	//	t.Errorf("Wrong Pool size. Expected %d got %d", 0, sz)
+	//}
 
-	if !(pool.getNBuffCreated() == uint64(ps)) {
-		t.Errorf("Wrong Pool created. Expected %d got %d", 0, sz)
+	if pool.getNBuffCreated() != uint64(sz) {
+		t.Errorf("Wrong Pool created. Expected %d got %d", sz, pool.getNBuffCreated())
 	}
 
 	var ct = pool.Get()

@@ -62,11 +62,16 @@ func GetCANMessages(messagePool *pool.Pool, fromSocket, toSocket chan *intf.CanF
 
 	// Forever
 	for {
+
+		//  START READ FRAME
+
 		// get a canframe from the pool and get the by buffer
 		var canFrame *intf.CanFrameIF = (*messagePool).Get()
 
 		var bytes = (*canFrame).GetMessage()
 		// Get the next message into the can raw bytes
+		// TODO This should be a goroutine - otherwise this whole loop is blocked waiting for the next can message
+
 		_, err := f.Read(bytes[0:])
 
 		// TODO Handle Errors
@@ -97,8 +102,9 @@ func GetCANMessages(messagePool *pool.Pool, fromSocket, toSocket chan *intf.CanF
 		(*canFrame).BuildCanFrameX()
 		//fmt.Println((*canFrame).String())
 
+		// Send the frame to the channel
 		fromSocket <- canFrame
-
+		/// XXX END PROCESS FRAOM
 	bufloop:
 		for {
 			select {

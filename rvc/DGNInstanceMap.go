@@ -10,6 +10,11 @@ const (
 	DGN_AIR_CONDITIONER_COMMAND       = 0x1FFE0
 	DGN_INVERTER_TEMPERATURE_STATUS   = 0x1FEBD
 	DGN_INVERTER_TEMPERATURE_STATUS_2 = 0x1FDCB
+	DGN_ADDRESS_CLAIM                 = 0x0EA00
+
+	INSTANCE_LIGHT_PASSENGER_TASK = 14
+
+	RVC_DATA_NOT_AVAILABLE uint8 = 255
 )
 
 /*
@@ -55,7 +60,7 @@ func init() {
 	DGNInstanceNames[DGNInstanceKey{DGN: DGN_DC_DIMMER_STATUS_3, Instance: 10}] = "Bedroom Courtesy"
 	DGNInstanceNames[DGNInstanceKey{DGN: DGN_DC_DIMMER_STATUS_3, Instance: 11}] = "Bedroom Sconce"
 	DGNInstanceNames[DGNInstanceKey{DGN: DGN_DC_DIMMER_STATUS_3, Instance: 12}] = "Bedroom Ceiling"
-	DGNInstanceNames[DGNInstanceKey{DGN: DGN_DC_DIMMER_STATUS_3, Instance: 14}] = "Passenger Task"
+	DGNInstanceNames[DGNInstanceKey{DGN: DGN_DC_DIMMER_STATUS_3, Instance: INSTANCE_LIGHT_PASSENGER_TASK}] = "Passenger Task"
 	DGNInstanceNames[DGNInstanceKey{DGN: DGN_DC_DIMMER_STATUS_3, Instance: 15}] = "Mid Bath Ceiling"
 	DGNInstanceNames[DGNInstanceKey{DGN: DGN_DC_DIMMER_STATUS_3, Instance: 16}] = "Mid Bath Vanity"
 	DGNInstanceNames[DGNInstanceKey{DGN: DGN_DC_DIMMER_STATUS_3, Instance: 18}] = "TV Accent"
