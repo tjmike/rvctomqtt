@@ -31,14 +31,15 @@ func RVCMessageHandler(fromSocket chan *intf.CanFrameIF, pool *pool.Pool) {
 			var dgn uint32 = uint32(rvcFrame.DGNHigh()) << 8
 			dgn = dgn | uint32(rvcFrame.DGNLow())
 
-			fmt.Printf("RAW FRAME: %s %x\n", rvcFrame.GetTimeStamp().Format("01-02-2006 15:04:05.000000"), rvcFrame.MessageBytes)
+			fmt.Printf("RAW FRAME: %s dgn: %x sa: %x , raw: %x\n",
+				rvcFrame.GetTimeStamp().Format("01-02-2006 15:04:05.000000"), dgn, rvcFrame.GetSourceAddress(), rvcFrame.MessageBytes)
 
 			// Get existing or create an ew RVCItem
 			var rvcItem, ok = rvc.GetRVCItem(rvcFrame)
 
 			if ok {
 				// We MUST do this first - if Init isn't called then all bets are off
-				// set the state of the tvc item from the data frame
+				// set the state of the rvc item from the data frame
 				var rvcFrameDereferenced = *rvcItem
 				rvcFrameDereferenced.Init(rvcFrame)
 
@@ -57,31 +58,26 @@ func RVCMessageHandler(fromSocket chan *intf.CanFrameIF, pool *pool.Pool) {
 					// TODO make string a constant
 					var _, ok = reflectedType.MethodByName("GetName")
 					if ok {
-						inputs := make([]reflect.Value, 0)
 
+						inputs := make([]reflect.Value, 0)
 						var getNameResults = reflectedValue.MethodByName("GetName").Call(inputs)
 						var dgnName = getNameResults[0].Interface()
-
 						var instanceName interface{} = "N/A"
 						// We assume if the item has GetName that it also has GetInstanceName
 						var mbn = reflectedValue.MethodByName("GetInstanceName")
-
 						//fmt.Printf("\tMBN: %s\n", mbn.Kind())
 						if mbn.Kind() != reflect.Invalid {
 							instanceName = mbn.Call(inputs)[0].Interface()
 							//instanceName = reflectedValue.MethodByName("GetInstanceName").Call(inputs)[0].Interface()
 						}
 						fmt.Printf("\t%x %s(%s)\n", dgn, dgnName, instanceName)
-
 						var nmethods = reflectedType.NumMethod()
-
 						for i := 0; i < nmethods; i++ {
 							var xmethod = reflectedType.Method(i)
 							var xmtype = xmethod.Type
 							var xmname = xmethod.Name
 							var nout = xmtype.NumOut()
 							var nin = xmtype.NumIn()
-
 							if nout == 1 && nin == 1 {
 								if strings.HasPrefix(xmname, "Get") {
 									var methodOutputDataType = xmtype.Out(0).Name()
@@ -118,7 +114,7 @@ func RVCMessageHandler(fromSocket chan *intf.CanFrameIF, pool *pool.Pool) {
 
 					}
 				} else {
-					fmt.Printf("XXXXX could not create  = %x\n", rvcFrame.MessageBytes)
+					fmt.Printf("no change detected  = %x existing = %s\n", rvcFrame.MessageBytes, rvcFrameDereferenced)
 
 				}
 			} else {

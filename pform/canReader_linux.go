@@ -23,6 +23,10 @@ import (
  *
  */
 func GetCANMessages(messagePool *pool.Pool, fromSocket chan *intf.CanFrameIF) {
+	go GetCANMessagesXX(messagePool, fromSocket)
+}
+
+func GetCANMessagesXX(messagePool *pool.Pool, fromSocket chan *intf.CanFrameIF) {
 
 	var socketInterface = "can0"
 	//var socketInterface = "vcan0"

@@ -210,6 +210,7 @@ func init() {
 	dGNtoName[0x1FED6] = "MFG_SPECIFIC_CLAIM_REQUEST"
 	dGNtoName[0x1FECA] = "DM_RV"
 	dGNtoName[0x0FECA] = "DM_1"
+	dGNtoName[DGN_ADDRESS_CLAIMED] = "ADDRESS_CLAIMED"
 }
 
 // func DGNName(rvcFrame *RvcFrame, dgn uint32) string {
@@ -225,7 +226,8 @@ func DGNName(dgn uint32) string {
 			ret = "ACK"
 		} else if (dgn & 0xfff00) == 0x0EA00 {
 			ret = "ADDRESS CLAIM"
-
+		} else if (dgn & 0xfff00) == 0x0EE00 {
+			ret = "ADDRESS CLAIMED"
 			// 1EF00h 1EFxxh proprietary DGN
 		} else {
 			ret = "unknown"

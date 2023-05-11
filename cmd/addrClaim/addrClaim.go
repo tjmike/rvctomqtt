@@ -1,4 +1,4 @@
-package addrClaim
+package main
 
 import (
 	"rvctomqtt/intf"

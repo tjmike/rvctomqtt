@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"runtime"
 	"rvctomqtt/handler"
 	"rvctomqtt/intf"
@@ -28,7 +29,8 @@ func main() {
 	go handler.RVCMessageHandler(fromSocket, p)
 
 	for {
-		print("Sleep\n")
+		fmt.Printf("Sleep # goRoutines = %d\n", runtime.NumGoroutine())
+
 		time.Sleep(time.Second * 30)
 	}
 

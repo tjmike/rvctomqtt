@@ -1,6 +1,7 @@
 package rvc
 
 import (
+	"fmt"
 	"rvctomqtt/constants"
 	sync2 "sync"
 )
@@ -131,7 +132,29 @@ func createRVCItem(f *RvcFrame) (RvcItemIF, bool) {
 			return ret, true
 		}
 
+	case DGN_ADDRESS_CLAIMED:
+		{
+			var ret RvcItemIF
+			ret = &AddressClaimed{}
+			return ret, true
+		}
+
 	}
 
+	// special case = the lower dgn is the desired address
+	if (dgn & 0xff00) == DGN_ADDRESS_CLAIM {
+		fmt.Printf("TRY ADDRESS CLAIM: %x", DGN_ADDRESS_CLAIM)
+		var ret RvcItemIF
+		ret = &AddressClaim{}
+		return ret, true
+	}
+
+	// NOTE: This should really be 0xeeff - but some SA's have bugs (ee42)
+	if (dgn & 0xff00) == DGN_ADDRESS_CLAIMED {
+		fmt.Printf("TRY ADDRESS CLAIMED:  %x for %x", DGN_ADDRESS_CLAIMED, dgn)
+		var ret RvcItemIF
+		ret = &AddressClaimed{}
+		return ret, true
+	}
 	return nil, false
 }

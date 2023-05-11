@@ -13,6 +13,10 @@ import (
 )
 
 func GetCANMessages(messagePool *pool.Pool, fromSocket chan *intf.CanFrameIF) {
+	go GetCANMessagesXXX(messagePool, fromSocket)
+
+}
+func GetCANMessagesXXX(messagePool *pool.Pool, fromSocket chan *intf.CanFrameIF) {
 	fmt.Printf("IMPLEMENT ME\n")
 	//XXX var m = &rvccan.Frame{}
 

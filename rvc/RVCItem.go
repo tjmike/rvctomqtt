@@ -60,7 +60,7 @@ func (i *RvcItem) Equals(o *RvcItem) bool {
 func (i *RvcItem) String() string {
 	i.lock.RLock()
 	defer i.lock.RUnlock()
-	return fmt.Sprintf("name: %s DGN: %x timestamp %s", i.name, i.dgn, i.timestamp)
+	return fmt.Sprintf("name: %s DGN: %x timestamp %s sa: %x", i.name, i.dgn, i.timestamp, i.sourceAddress)
 }
 
 func (i *RvcItem) GetName() string {
