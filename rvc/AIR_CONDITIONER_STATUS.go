@@ -35,7 +35,7 @@ type airConditionerStatus struct {
 }
 
 func (i *airConditionerStatus) String() string {
-	return fmt.Sprintf("DGN: %x(%s) SA: %d Instance: %d operatingModel: %d maxFanSpeed: %f maxOutputLevel: %f fanSpeed: %f acOutputLevel: %f deadBand %f, 2ndStagDeadBand2 %f",
+	return fmt.Sprintf("acss DGN: %x(%s) SA: %d Instance: %d operatingModel: %d maxFanSpeed: %f maxOutputLevel: %f fanSpeed: %f acOutputLevel: %f deadBand %f, 2ndStagDeadBand2 %f",
 		i.dgn, i.GetName(),
 		i.GetSourceAddress(),
 		i.instance, i.operatingMode, i.maxFanSpeed, i.maxOutputLevel, i.fanSpeed,

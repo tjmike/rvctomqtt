@@ -32,7 +32,7 @@ type inverterTemperatureStatus struct {
 func (i *inverterTemperatureStatus) String() string {
 	i.lock.RLock()
 	defer i.lock.RUnlock()
-	return fmt.Sprintf("DGN: %x(%s) SA: %d Instance: %d fet1Temp(C/f): %f/%f transformerTemp(C/f): %f/%f fet2Temp(Cf): %f/%f",
+	return fmt.Sprintf("ivts DGN: %x(%s) SA: %d Instance: %d fet1Temp(C/f): %f/%f transformerTemp(C/f): %f/%f fet2Temp(Cf): %f/%f",
 		i.dgn, i.GetName(),
 		i.GetSourceAddress(),
 		i.GetInstance(),

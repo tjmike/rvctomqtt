@@ -1,23 +1,36 @@
 package pform
 
 import (
-	//"github.com/golang-collections/collections/stack"
-	//"net"
-	//"os"
-	//"syscall"
-	//"time"
-	"fmt"
+	"context"
+	"go.uber.org/zap"
 	"rvctomqtt/intf"
 	"rvctomqtt/pool"
+	"rvctomqtt/utils"
 	"time"
 )
 
-func GetCANMessages(messagePool *pool.Pool, fromSocket chan *intf.CanFrameIF) {
-	go GetCANMessagesXXX(messagePool, fromSocket)
+func GetCANMessages(ctx *context.Context, log *zap.Logger, messagePool *pool.Pool, fromSocket chan *intf.CanFrameIF) {
+	go GetCANMessagesXXX(ctx, log, messagePool, fromSocket)
 
 }
-func GetCANMessagesXXX(messagePool *pool.Pool, fromSocket chan *intf.CanFrameIF) {
-	fmt.Printf("IMPLEMENT ME\n")
+func GetCANMessagesXXX(ctx *context.Context, log *zap.Logger, messagePool *pool.Pool, fromSocket chan *intf.CanFrameIF) {
+
+	log = utils.ApplyContext(ctx, log)
+
+	//f := map[string]zap.Field(ctx.Value("logFields"))
+	//var f = zap.Field{
+	//	Key:       "workID",
+	//	Type:      zapcore.StringType,
+	//	Integer:   0,
+	//	String:    "CanReader1",
+	//	Interface: nil,
+	//}
+	//log.With(f).Info("ZAP LOG")
+	//log.With(f).Warn("ZAP LOG")
+	log.Warn("ZAP LOG")
+	log.Info("ZAP LOG")
+
+	//fmt.Printf("IMPLEMENT ME\n")
 	//XXX var m = &rvccan.Frame{}
 
 	//var mm intf.CanFrameIF = &rvccan.Frame{}
