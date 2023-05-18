@@ -69,12 +69,18 @@ func (msg *RvcFrame) DGNLow() uint8 {
 	return msg.PGN.GetPDUSpecific()
 }
 
+func (msg *RvcFrame) String2() string {
+	return "ZZZ WTF" //+ msg.String()
+}
 func (msg *RvcFrame) String() string {
-	return fmt.Sprintf("TS:%d - canID=%X DGNH = %x DGNL=%x ERR=%t RTR=%t EXT=%t Data Len=%d Data=%s RAW=%s", // DGN=%X SRCADDR=%X len=%d - % X" ,
-		msg.GetTimeStamp().UnixNano(),
+
+	return fmt.Sprintf("TS:%s - canID=%X DGN=%x ERR=%t RTR=%t EXT=%t Data Len=%d Data=%s RAW=%s", // DGN=%X SRCADDR=%X len=%d - % X" ,
+		msg.GetTimeStamp().Format("01-02-2006 15:04:05.000000"),
+		//msg.GetTimeStamp().UnixNano(),
 		msg.CanID(),
-		msg.DGNHigh(),
-		msg.DGNLow(),
+		msg.DGN(),
+		//msg.DGNHigh(),
+		//msg.DGNLow(),
 		msg.IsERR(),
 		msg.IsRTR(),
 		msg.IsExtended(),

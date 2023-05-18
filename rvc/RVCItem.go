@@ -22,7 +22,7 @@ const (
 type RvcItem struct {
 	name          string    // DGN Name - TODO we could leave this a method and use a map to look it up
 	dgn           uint32    // Once created this does not change
-	sourceAddress uint8     // Source address (requester/sender?)
+	sourceAddress uint8     // Source address (requester/sender?) this just SA OR desired SA for address claim
 	priority      uint8     // 3 bit priority
 	timestamp     time.Time // System timestamp for this message
 	lastChanged   time.Time // timestamp of the last change - a sub class is expected to set this
@@ -34,7 +34,7 @@ type RvcItem struct {
 	// TODO rather than have a mutex and all this locking - maybe we can use a channel. In order to pull that off we need
 	//      to understand how an "Init" would work where we have some "active" instance and we want to update its state
 	//      while insuring that others who may be also be querying the state get correct picture of things.
-	// Maybe there's some server goroutine that recieves set/get message requests. So there's 1 goroutine that maintains
+	// Maybe there's some server goroutine that receives set/get message requests. So there's 1 goroutine that maintains
 	// state and this goroutine is event driven - it simply blocks awaiting set/get requests.
 	lock sync.RWMutex
 }
@@ -60,7 +60,7 @@ func (i *RvcItem) Equals(o *RvcItem) bool {
 func (i *RvcItem) String() string {
 	i.lock.RLock()
 	defer i.lock.RUnlock()
-	return fmt.Sprintf("name: %s DGN: %x timestamp %s sa: %x", i.name, i.dgn, i.timestamp, i.sourceAddress)
+	return fmt.Sprintf("name: %s DGN: %x timestamp %s sa: %x pri: %x", i.name, i.dgn, i.timestamp, i.sourceAddress, i.priority)
 }
 
 func (i *RvcItem) GetName() string {
@@ -134,6 +134,11 @@ func (i *RvcItem) GetPriority() uint8 {
 // give the frame back to be reused.
 func (r *RvcItem) Init(f *RvcFrame) {
 	r.timestamp = f.GetTimeStamp()
+	fmt.Printf("ZZZ RVCItemInit: TS=%s FrameTS=%s\n",
+		r.timestamp.Format("01-02-2006 15:04:05.000000"),
+		f.GetTimeStamp().Format("01-02-2006 15:04:05.000000"),
+	)
+
 	r.dgn = uint32(f.DGNHigh()) << 8
 	r.dgn = uint32(f.DGNLow()) | r.dgn
 	r.name = DGNName(r.dgn)

@@ -85,7 +85,7 @@ func (i *DCDimmerCommand2) SetDGN(dgn uint32) {
 	i.lock.RLock()
 	defer i.lock.RUnlock()
 	i.dgn = dgn
-	i.name = dGNtoName[dgn]
+	i.name = DGNName(dgn)
 }
 
 func (i *DCDimmerCommand2) SetSourceAddress(sa uint8) {
@@ -248,9 +248,9 @@ func (i *DCDimmerCommand2) String() string {
 	//	rampTime        float64 // seconds (0.1) 0-25 seconds
 	//	reserved        uint8   //
 
-	return fmt.Sprintf("%s DGN: %x (%s) SA: %d Instance: %d (%s) group: %d brigntness: %f command: %d lockitem: %d res1: %d res2: %d res3: %d rampTime %f reserved %d",
+	return fmt.Sprintf("TS: %s DGN: %x (%s) SA: %d Instance: %d (%s) group: %d brigntness: %f command: %d lockitem: %d res1: %d res2: %d res3: %d rampTime %f reserved %d",
 		i.GetTimestamp().Format("01-02-2006 15:04:05.000000"),
-		i.GetDGN(), dGNtoName[i.GetDGN()],
+		i.GetDGN(), DGNName(i.GetDGN()),
 		i.GetSourceAddress(),
 		i.deviceInstance,
 		i.GetInstanceName(),

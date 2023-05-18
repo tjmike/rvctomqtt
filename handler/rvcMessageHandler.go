@@ -12,30 +12,31 @@ import (
 	"rvctomqtt/utils"
 	"strings"
 	"time"
-	//"strings"
 )
 
-// RVCMessageHandler - we expect to see RvcFrames here. For now we leave the channel interface as can frames and just
+// RVCMessageHandler - we expect to see RvcFrames here. For now, we leave the channel interface as can frames and just
 // ignore data if it's not an RVC frame.
 func RVCMessageHandler(ctx *context.Context, log *zap.Logger, fromSocket chan *intf.CanFrameIF, pool *pool.Pool) {
 
 	// interesting issue - when
-	utils.ApplyContext(ctx, log)
+	log = utils.ApplyContext(ctx, log)
 
 	log.Info("############################### HANDLER #####################")
 	var nmsg uint32 = 0
 
 	//var m := treemap.NewWithIntComparator()
 
+	// # of times the key (dgn) has been seen
 	var seen = make(map[uint32]uint64)
 
-	var packets uint64 = 0
+	var goodPackets uint64 = 0
+	var badpackets uint64 = 0
 	for {
 		data := <-fromSocket //get the RVC packet
 
-		packets++
 		rvcFrame, ok := (*data).(*rvc.RvcFrame) // all frames **should** be RvcFrams
 		if ok {
+			goodPackets++
 			var dgn uint32 = rvcFrame.DGN()
 
 			logRawFrame(log, rvcFrame, dgn)
@@ -53,7 +54,7 @@ func RVCMessageHandler(ctx *context.Context, log *zap.Logger, fromSocket chan *i
 
 				// if timestamps are equal then it must have changed or is new
 				if rvcItem.GetTimestamp() == rvcItem.GetLastChanged() {
-					log.Info(fmt.Sprintf("%s", rvcItem))
+					log.Info(fmt.Sprintf("CHANGED: %s", rvcItem))
 					dumpItemViaReflection(rvcItemPtr, dgn)
 				} else {
 					if log.Level() >= zapcore.InfoLevel {
@@ -68,12 +69,13 @@ func RVCMessageHandler(ctx *context.Context, log *zap.Logger, fromSocket chan *i
 			nseen := 1 + seen[dgn]
 			seen[dgn] = nseen
 		} else {
+			badpackets++
 			// If we get here it's likely a bug
 			log.Warn("NOT RVC FRAME???")
 		}
 
-		if (packets % 100) == 0 {
-			logStats(log, seen)
+		if (goodPackets % 100) == 0 {
+			logStats(log, seen, goodPackets, badpackets)
 		}
 
 		// We're don with this message, put it back into the pool
@@ -83,88 +85,92 @@ func RVCMessageHandler(ctx *context.Context, log *zap.Logger, fromSocket chan *i
 	}
 }
 
-func logStats(log *zap.Logger, seen map[uint32]uint64) {
-	log.Info("############# STATS ########")
-	for k, v := range seen {
-		var name = rvc.DGNName(k)
-		if log.Level() >= zapcore.InfoLevel {
-			log.Info(fmt.Sprintf("%10s %10x %10d  %20s", "STATS", k, v, name))
+func logStats(log *zap.Logger, seen map[uint32]uint64, good uint64, bad uint64) {
+	if log.Level() >= zapcore.InfoLevel {
+		log.Info(fmt.Sprintf("############# STATS ######## #goodParckets=%d #badPackets=%d", good, bad))
+		for k, v := range seen {
+			var name = rvc.DGNName(k)
+			if log.Level() >= zapcore.InfoLevel {
+				log.Info(fmt.Sprintf("%10s %10x %10d  %20s", "STATS", k, v, name))
+			}
 		}
 	}
 }
 
 func logRawFrame(log *zap.Logger, rvcFrame *rvc.RvcFrame, dgn uint32) {
 	if log.Level() >= zapcore.InfoLevel {
-		log.Info(fmt.Sprintf("RAW FRAME: %s dgn: %x sa: %x , raw: %x",
-			rvcFrame.GetTimeStamp().Format("01-02-2006 15:04:05.000000"), dgn, rvcFrame.GetSourceAddress(), rvcFrame.MessageBytes))
+		log.Info(fmt.Sprintf("RAW FRAME: %s dgn: %x sa: %x , details: %s raw: %x",
+			rvcFrame.GetTimeStamp().Format("01-02-2006 15:04:05.000000"), dgn, rvcFrame.GetSourceAddress(),
+			rvcFrame,
+			rvcFrame.MessageBytes))
 	}
 }
 
 func dumpItemViaReflection(rvcItem *rvc.RvcItemIF, dgn uint32) {
-	{
-		// let's see what we have
-		var reflectedType = reflect.TypeOf(*rvcItem)
-		var reflectedValue = reflect.ValueOf(*rvcItem)
 
-		// special case - all should have a getName method. We want to establish that the
-		// method exists with the type method by name so we can later use the value methodByName
-		// TODO make string a constant
-		var _, ok = reflectedType.MethodByName("GetName")
-		if ok {
+	// let's see what we have
+	var reflectedType = reflect.TypeOf(*rvcItem)
+	var reflectedValue = reflect.ValueOf(*rvcItem)
 
-			inputs := make([]reflect.Value, 0)
-			var getNameResults = reflectedValue.MethodByName("GetName").Call(inputs)
-			var dgnName = getNameResults[0].Interface()
-			var instanceName interface{} = "N/A"
-			// We assume if the item has GetName that it also has GetInstanceName
-			var mbn = reflectedValue.MethodByName("GetInstanceName")
-			//fmt.Printf("\tMBN: %s\n", mbn.Kind())
-			if mbn.Kind() != reflect.Invalid {
-				instanceName = mbn.Call(inputs)[0].Interface()
-				//instanceName = reflectedValue.MethodByName("GetInstanceName").Call(inputs)[0].Interface()
-			}
-			fmt.Printf("\t%x %s(%s)\n", dgn, dgnName, instanceName)
-			var nmethods = reflectedType.NumMethod()
-			for i := 0; i < nmethods; i++ {
-				var xmethod = reflectedType.Method(i)
-				var xmtype = xmethod.Type
-				var xmname = xmethod.Name
-				var nout = xmtype.NumOut()
-				var nin = xmtype.NumIn()
-				if nout == 1 && nin == 1 {
-					if strings.HasPrefix(xmname, "Get") {
-						var methodOutputDataType = xmtype.Out(0).Name()
+	// special case - all should have a getName method. We want to establish that the
+	// method exists with the type method by name so we can later use the value methodByName
+	// TODO make string a constant
+	var _, ok = reflectedType.MethodByName("GetName")
+	if ok {
 
-						if methodOutputDataType == "uint8" || methodOutputDataType == "Uint2" || methodOutputDataType == "uint16" || methodOutputDataType == "uint32" {
-							var XXX = reflectedValue.Method(i).Call(inputs)
-							var yyy = XXX[0].Uint()
-							fmt.Printf("\t\t%s(%s)=%d\n", xmname, methodOutputDataType, yyy)
+		inputs := make([]reflect.Value, 0)
+		var getNameResults = reflectedValue.MethodByName("GetName").Call(inputs)
+		var dgnName = getNameResults[0].Interface()
+		var instanceName interface{} = "N/A"
+		// We assume if the item has GetName that it also has GetInstanceName
+		var mbn = reflectedValue.MethodByName("GetInstanceName")
+		//fmt.Printf("\tMBN: %s\n", mbn.Kind())
+		if mbn.Kind() != reflect.Invalid {
+			instanceName = mbn.Call(inputs)[0].Interface()
+			//instanceName = reflectedValue.MethodByName("GetInstanceName").Call(inputs)[0].Interface()
+		}
+		fmt.Printf("\t%x %s(%s)\n", dgn, dgnName, instanceName)
+		var nmethods = reflectedType.NumMethod()
+		for i := 0; i < nmethods; i++ {
+			var xmethod = reflectedType.Method(i)
+			var xmtype = xmethod.Type
+			var xmname = xmethod.Name
+			var nout = xmtype.NumOut()
+			var nin = xmtype.NumIn()
+			if nout == 1 && nin == 1 {
+				if strings.HasPrefix(xmname, "Get") {
+					var methodOutputDataType = xmtype.Out(0).Name()
 
-						} else if methodOutputDataType == "Time" {
-							inputs := make([]reflect.Value, 0)
-							var XXX = reflectedValue.Method(i).Call(inputs)
-							var yyy = XXX[0]
-							var zzz = yyy.Interface()
-							var zzz2 = zzz.(time.Time)
-							fmt.Printf("\t\t%s(%s)=%s\n", xmname, methodOutputDataType, zzz2.Format("01-02-2006 15:04:05.000000"))
+					if methodOutputDataType == "uint8" || methodOutputDataType == "Uint2" || methodOutputDataType == "uint16" || methodOutputDataType == "uint32" {
+						var XXX = reflectedValue.Method(i).Call(inputs)
+						var yyy = XXX[0].Uint()
+						fmt.Printf("\t\t%s(%s)=%d\n", xmname, methodOutputDataType, yyy)
 
-						} else if methodOutputDataType == "string" {
-							inputs := make([]reflect.Value, 0)
-							var XXX = reflectedValue.Method(i).Call(inputs)
-							var yyy = XXX[0]
-							fmt.Printf("\t\t%s(%s)=%s\n", xmname, methodOutputDataType, yyy)
-						} else if methodOutputDataType == "float64" {
-							inputs := make([]reflect.Value, 0)
-							var XXX = reflectedValue.Method(i).Call(inputs)
-							var yyy = XXX[0].Float()
-							fmt.Printf("\t\t%s(%s)=%f\n", xmname, methodOutputDataType, yyy)
-						} else {
-							fmt.Printf("\t\t(UNSUPPORTED TYPE)   name = %s type = %s \n", xmname, methodOutputDataType)
-						}
+					} else if methodOutputDataType == "Time" {
+						inputs := make([]reflect.Value, 0)
+						var XXX = reflectedValue.Method(i).Call(inputs)
+						var yyy = XXX[0]
+						var zzz = yyy.Interface()
+						var zzz2 = zzz.(time.Time)
+						fmt.Printf("\t\t%s(%s)=%s\n", xmname, methodOutputDataType, zzz2.Format("01-02-2006 15:04:05.000000"))
+
+					} else if methodOutputDataType == "string" {
+						inputs := make([]reflect.Value, 0)
+						var XXX = reflectedValue.Method(i).Call(inputs)
+						var yyy = XXX[0]
+						fmt.Printf("\t\t%s(%s)=%s\n", xmname, methodOutputDataType, yyy)
+					} else if methodOutputDataType == "float64" {
+						inputs := make([]reflect.Value, 0)
+						var XXX = reflectedValue.Method(i).Call(inputs)
+						var yyy = XXX[0].Float()
+						fmt.Printf("\t\t%s(%s)=%f\n", xmname, methodOutputDataType, yyy)
+					} else {
+						fmt.Printf("\t\t(UNSUPPORTED TYPE)   name = %s type = %s \n", xmname, methodOutputDataType)
 					}
 				}
 			}
-
 		}
+
 	}
+
 }

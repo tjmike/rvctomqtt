@@ -42,8 +42,8 @@ import (
 
 type Frame struct {
 	timestamp time.Time // timestamp for this message
-	// 32 bit CAN_ID + EFF/RTR/ERR flags
 
+	// 32 bit CAN_ID + EFF/RTR/ERR flags
 	eFF_RTR_ERR_Flag uint8 // flags for 3 msbits
 
 	// bit 0-28: CAN identifier (11/29 bit)

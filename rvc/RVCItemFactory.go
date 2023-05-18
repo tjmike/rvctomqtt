@@ -20,6 +20,10 @@ var rvcItemMap map[DGNInstanceKey]*RvcItemIF
 
 // dgnHasInstances - a singleton map that tells us if this DGN has an instance field. Since we maintain the state of everything
 // we need to know if a particular DGN has multiple instances. We need to know this BEFORE we create the instance.
+// TODO: This is fragile - we need to keep it in sync - need a better approach
+//       Consider a "const" struct that has metadata properties (name, hasInstance, etc.)
+//       This struct could be hardcoded or loaded from a config file
+//       Maybe this struct could also provide a function to create an instance?
 
 var dgnHasInstances map[uint32]bool
 var locker = sync2.RWMutex{}
@@ -54,6 +58,7 @@ func init() {
 	dgnHasInstances[DGN_TANK_STATUS] = true
 	dgnHasInstances[DGN_AIR_CONDITIONER_STATUS] = true
 	dgnHasInstances[DGN_AIR_CONDITIONER_COMMAND] = true
+	dgnHasInstances[DGN_DC_DIMMER_COMMAND_2] = true
 }
 
 // getInstanceKey - get the instance key for this frame. It will pull the instatnceID if we have one
@@ -136,16 +141,17 @@ func createRVCItem(f *RvcFrame) (RvcItemIF, bool) {
 		{
 			var ret RvcItemIF
 			ret = &AddressClaimed{}
+			fmt.Printf("ADDRESS CLAIMED CALLED %s\n", ret)
 			return ret, true
 		}
 
 	}
 
 	// special case = the lower dgn is the desired address
-	if (dgn & 0xff00) == DGN_ADDRESS_CLAIM {
-		fmt.Printf("TRY ADDRESS CLAIM: %x", DGN_ADDRESS_CLAIM)
+	if (dgn & 0xff00) == DGN_INFORMATION_REQUEST {
+		fmt.Printf("TRY INFORMATION REQUEST: %x", DGN_INFORMATION_REQUEST)
 		var ret RvcItemIF
-		ret = &AddressClaim{}
+		ret = &InformationRequest{}
 		return ret, true
 	}
 
@@ -156,5 +162,6 @@ func createRVCItem(f *RvcFrame) (RvcItemIF, bool) {
 		ret = &AddressClaimed{}
 		return ret, true
 	}
+
 	return nil, false
 }

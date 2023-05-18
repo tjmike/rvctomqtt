@@ -76,9 +76,9 @@ func createDCDimmerFrame() intf.CanFrameIF {
 }
 
 func createReqAddFrame(desiredSA uint8) intf.CanFrameIF {
-	var dmr = rvc.AddressClaim{}
-	dmr.SetDesiredSourceAddress(desiredSA)
-	dmr.SetDGN(rvc.DGN_ADDRESS_CLAIM)
+	var dmr = rvc.InformationRequest{}
+	dmr.SetAsAddressClaim(desiredSA)
+	dmr.SetDGN(rvc.DGN_INFORMATION_REQUEST)
 	dmr.SetPriority(6)
 	var f = dmr.CreateFrame()
 	var cif intf.CanFrameIF = intf.CanFrameIF(f)

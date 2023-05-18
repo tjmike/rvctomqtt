@@ -6,6 +6,8 @@ import (
 	"rvctomqtt/utils"
 )
 
+// NOTE This is just a special case of information request!
+
 type AddressClaim struct {
 	RvcItem
 	desiredSA uint8

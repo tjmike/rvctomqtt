@@ -139,7 +139,7 @@ func (r *DCDimmerStatus3) Init(from *RvcFrame) {
 	{
 		var tmp = utils.GetByte(dataBytes, 0)
 		if (*r).deviceInstance != tmp {
-			fmt.Printf("INSTANCE CHANGED!!! %d != %d\n", tmp, (*r).deviceInstance)
+			fmt.Printf("DCDimmerStatus3 INSTANCE CHANGED!!! %d != %d\n", tmp, (*r).deviceInstance)
 		}
 		(*r).deviceInstance = utils.GetByte(dataBytes, 0)
 	}

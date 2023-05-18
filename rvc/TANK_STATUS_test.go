@@ -1,6 +1,8 @@
 package rvc
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestTankStatus(t *testing.T) {
 	var dcds = tankStatus{}

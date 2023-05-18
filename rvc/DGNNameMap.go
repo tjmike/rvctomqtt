@@ -224,8 +224,8 @@ func DGNName(dgn uint32) string {
 			ret = "TERMINAL??"
 		} else if (dgn & 0xfff00) == 0x0E800 {
 			ret = "ACK"
-		} else if (dgn & 0xfff00) == 0x0EA00 {
-			ret = "ADDRESS CLAIM"
+		} else if (dgn & 0xfff00) == DGN_INFORMATION_REQUEST {
+			ret = "INFORMATION REQUEST"
 		} else if (dgn & 0xfff00) == 0x0EE00 {
 			ret = "ADDRESS CLAIMED"
 			// 1EF00h 1EFxxh proprietary DGN

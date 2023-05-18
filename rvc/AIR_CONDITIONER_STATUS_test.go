@@ -1,11 +1,17 @@
 package rvc
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestAirConditionerStatus(t *testing.T) {
+
 	var acstatus = airConditionerStatus{}
 	var f = RvcFrame{}
 	var raw = f.GetMessage()
+
+	//fmt.Printf("AC Status = %s", raw)
+	//fmt.Printf("AC Status = %s", acstatus.String())
 
 	//                          0  1  2  3  4  5  6  7
 	// 97 e1 ff 99 08 00 00 00 01 00 ff ff 00 00 ff 00
@@ -27,6 +33,7 @@ func TestAirConditionerStatus(t *testing.T) {
 	raw[15] = 0x0a // 2nd dead band (deg c) (1.0)
 
 	f.BuildCanFrameX()
+
 	acstatus.Init(&f)
 
 	{

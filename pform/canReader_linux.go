@@ -107,10 +107,25 @@ func GetCANMessagesXX(ctx *context.Context, log *zap.Logger, messagePool *pool.P
 			(*canFrame).SetTimeStamp(pktTime)
 		}
 
-		log.Info(fmt.Sprintf("READ: %x", (*canFrame).GetMessage()))
+		//a, ok := (rvc.RvcFrame).(canFrame)
+		//var rvcs, ok = (*canFrame).(*rvc.RvcFrame)
+		//if ok {
+		//	log.Info(fmt.Sprintf("RVCREAD:xxx %s", (*rvcs).String2()))
+		//} else {
+		//	log.Info("RVCREAD: CAN'T CAST")
+		//
+		//}
+		//var rvcs, ok = (*canFrame).(rvc.RvcFrame)
+
+		//log.Info(fmt.Sprintf("READ: %x", (*canFrame).GetMessage()))
+
+		//fmt.Sprintf("READ: %s\n", (*canFrame).String())
 
 		(*canFrame).BuildCanFrameX()
 		//fmt.Println((*canFrame).String())
+
+		// do AFTER we build the frame!!!
+		log.Info(fmt.Sprintf("READ: %s", (*canFrame).String()))
 
 		// Send the frame to the channel
 		fromSocket <- canFrame
