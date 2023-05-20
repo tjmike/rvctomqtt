@@ -29,6 +29,14 @@ type DCDimmerCommand2 struct {
 	//lock            sync.RWMutex
 }
 
+//	func (r *DCDimmerCommand2) GetInstanceKey() interface{} {
+//		r.lock.RLock()
+//		defer r.lock.RUnlock()
+//		return DGNInstanceKey{
+//			r.dgn,
+//			r.deviceInstance,
+//		}
+//	}
 func (i *DCDimmerCommand2) Equals(o *DCDimmerCommand2) bool {
 	// Nasty - do we really want to get two locks? What happens if we get a ref to ourself (eg both args point to same things)
 	// NOT locking for now ....

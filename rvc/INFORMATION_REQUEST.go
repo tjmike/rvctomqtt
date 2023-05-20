@@ -23,6 +23,13 @@ type InformationRequest struct {
 	instance2          uint8
 }
 
+// GetInstanceKey - we just keep the last request for each destination address
+//func (r *InformationRequest) GetInstanceKey() interface{} {
+//	r.lock.RLock()
+//	defer r.lock.RUnlock()
+//	return InformationRequestKey{r.destinationAddress}
+//}
+
 func (i *InformationRequest) SetDesiredDGN(desiredDGN uint32) {
 	i.lock.RLock()
 	defer i.lock.RUnlock()

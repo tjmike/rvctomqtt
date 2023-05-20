@@ -29,6 +29,10 @@ type inverterTemperatureStatus struct {
 	fet2Temp        float64 //
 }
 
+//func (r *inverterTemperatureStatus) GetInstanceKey() interface{} {
+//	return DGNInstanceKey{r.dgn, r.instance}
+//}
+
 func (i *inverterTemperatureStatus) String() string {
 	i.lock.RLock()
 	defer i.lock.RUnlock()

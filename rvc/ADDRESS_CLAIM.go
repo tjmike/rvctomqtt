@@ -1,13 +1,7 @@
 package rvc
 
-import (
-	"fmt"
-	"rvctomqtt/constants"
-	"rvctomqtt/utils"
-)
-
 // NOTE This is just a special case of information request!
-
+/*
 type AddressClaim struct {
 	RvcItem
 	desiredSA uint8
@@ -106,3 +100,4 @@ func (r *AddressClaim) Equals(o *AddressClaim) bool {
 	}
 	return true
 }
+*/

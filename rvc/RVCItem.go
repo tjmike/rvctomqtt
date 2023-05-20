@@ -39,6 +39,10 @@ type RvcItem struct {
 	lock sync.RWMutex
 }
 
+//func (r *RvcItem) GetInstanceKey() interface{} {
+//	return DGNInstanceKey{r.dgn, r.GetInstance()}
+//}
+
 func (i *RvcItem) Equals(o *RvcItem) bool {
 	if i.name != o.name {
 		return false
@@ -103,6 +107,8 @@ func (i *RvcItem) GetInstance() byte {
 
 // RvcItemIF = Get methods are exported.
 type RvcItemIF interface {
+	//GetInstanceKey() interface{}
+
 	// GetName - the name of this DGN
 	GetName() string
 	GetDGN() uint32
@@ -134,10 +140,10 @@ func (i *RvcItem) GetPriority() uint8 {
 // give the frame back to be reused.
 func (r *RvcItem) Init(f *RvcFrame) {
 	r.timestamp = f.GetTimeStamp()
-	fmt.Printf("ZZZ RVCItemInit: TS=%s FrameTS=%s\n",
-		r.timestamp.Format("01-02-2006 15:04:05.000000"),
-		f.GetTimeStamp().Format("01-02-2006 15:04:05.000000"),
-	)
+	//fmt.Printf("ZZZ RVCItemInit: TS=%s FrameTS=%s\n",
+	//	r.timestamp.Format("01-02-2006 15:04:05.000000"),
+	//	f.GetTimeStamp().Format("01-02-2006 15:04:05.000000"),
+	//)
 
 	r.dgn = uint32(f.DGNHigh()) << 8
 	r.dgn = uint32(f.DGNLow()) | r.dgn

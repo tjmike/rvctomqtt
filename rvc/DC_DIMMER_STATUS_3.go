@@ -29,6 +29,14 @@ type DCDimmerStatus3 struct {
 	masterMemoryVal   uint8           // 7
 }
 
+//	func (r *DCDimmerStatus3) GetInstanceKey() interface{} {
+//		r.lock.RLock()
+//		defer r.lock.RUnlock()
+//		return DGNInstanceKey{
+//			r.dgn,
+//			r.deviceInstance,
+//		}
+//	}
 func (i *DCDimmerStatus3) getInterlockStatus() constants.Uint2 {
 	i.lock.RLock()
 	defer i.lock.RUnlock()
@@ -109,7 +117,7 @@ func (i *DCDimmerStatus3) String() string {
 	defer i.lock.RUnlock()
 	//var s = i.RvcItem.String()
 	var iname = i.GetInstanceName()
-	return fmt.Sprintf("%s DGN: %x (%s) SA: %d Instance: %d (%s) group: %d brigntness: %f lockitem: %d overcurrent: %d enable: %d delayDuration: %d last %d interlock %d, load status %d reserved: %d undercurrent: %d memval: %d",
+	return fmt.Sprintf("%s DGN: %x (%s) SA: %x Instance: %d (%s) group: %d brigntness: %f lockitem: %d overcurrent: %d enable: %d delayDuration: %d last %d interlock %d, load status %d reserved: %d undercurrent: %d memval: %d",
 		i.GetTimestamp().Format("01-02-2006 15:04:05.000000"),
 		i.dgn, i.name,
 		i.GetSourceAddress(),

@@ -39,7 +39,7 @@ func RVCMessageHandler(ctx *context.Context, log *zap.Logger, fromSocket chan *i
 			goodPackets++
 			var dgn uint32 = rvcFrame.DGN()
 
-			logRawFrame(log, rvcFrame, dgn)
+			//logRawFrame(log, rvcFrame, dgn)
 
 			// Get existing or create a new RVCItem
 			// Note that ok will be false if we don't recognize the DGN because we then won't be able to create a DGN
@@ -54,11 +54,16 @@ func RVCMessageHandler(ctx *context.Context, log *zap.Logger, fromSocket chan *i
 
 				// if timestamps are equal then it must have changed or is new
 				if rvcItem.GetTimestamp() == rvcItem.GetLastChanged() {
-					log.Info(fmt.Sprintf("CHANGED: %s", rvcItem))
+					if log.Level() >= zapcore.InfoLevel {
+						// just to prevent noise....
+						if !rvc.Ignore(rvcItemPtr) {
+							log.Info(fmt.Sprintf("CHANGED: %s", rvcItem))
+						}
+					}
 					dumpItemViaReflection(rvcItemPtr, dgn)
 				} else {
-					if log.Level() >= zapcore.InfoLevel {
-						log.Info(fmt.Sprintf("no change detected  = %x existing = %s", rvcFrame.MessageBytes, rvcItem))
+					if log.Level() >= zapcore.DebugLevel {
+						log.Debug(fmt.Sprintf("no change detected  = %x existing = %s", rvcFrame.MessageBytes, rvcItem))
 					}
 				}
 			} else {
@@ -74,7 +79,7 @@ func RVCMessageHandler(ctx *context.Context, log *zap.Logger, fromSocket chan *i
 			log.Warn("NOT RVC FRAME???")
 		}
 
-		if (goodPackets % 100) == 0 {
+		if (goodPackets % 10000) == 0 {
 			logStats(log, seen, goodPackets, badpackets)
 		}
 

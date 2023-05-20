@@ -16,7 +16,7 @@ import (
 
 // a single cache for the whole app
 
-var rvcItemMap map[DGNInstanceKey]*RvcItemIF
+var rvcItemMap map[interface{}]*RvcItemIF
 
 // dgnHasInstances - a singleton map that tells us if this DGN has an instance field. Since we maintain the state of everything
 // we need to know if a particular DGN has multiple instances. We need to know this BEFORE we create the instance.
@@ -25,7 +25,7 @@ var rvcItemMap map[DGNInstanceKey]*RvcItemIF
 //       This struct could be hardcoded or loaded from a config file
 //       Maybe this struct could also provide a function to create an instance?
 
-var dgnHasInstances map[uint32]bool
+// var dgnHasInstances map[uint32]bool
 var locker = sync2.RWMutex{}
 
 // GetRVCItem - get the RVC item for the given frame. If it does not exist create one, cache it and return it
@@ -49,27 +49,54 @@ func GetRVCItem(f *RvcFrame) (*RvcItemIF, bool) {
 }
 
 func init() {
-	rvcItemMap = make(map[DGNInstanceKey]*RvcItemIF)
+	rvcItemMap = make(map[interface{}]*RvcItemIF)
 
-	dgnHasInstances = make(map[uint32]bool)
-	dgnHasInstances[DGN_DC_DIMMER_STATUS_3] = true
-	dgnHasInstances[DGN_DC_SOURCE_STATUS_1_SPYDER] = true
-	dgnHasInstances[DGN_DC_SOURCE_STATUS_1] = true
-	dgnHasInstances[DGN_TANK_STATUS] = true
-	dgnHasInstances[DGN_AIR_CONDITIONER_STATUS] = true
-	dgnHasInstances[DGN_AIR_CONDITIONER_COMMAND] = true
-	dgnHasInstances[DGN_DC_DIMMER_COMMAND_2] = true
+	//dgnHasInstances = make(map[uint32]bool)
+	//dgnHasInstances[DGN_DC_DIMMER_STATUS_3] = true
+	//dgnHasInstances[DGN_DC_SOURCE_STATUS_1_SPYDER] = true
+	//dgnHasInstances[DGN_DC_SOURCE_STATUS_1] = true
+	//dgnHasInstances[DGN_TANK_STATUS] = true
+	//dgnHasInstances[DGN_AIR_CONDITIONER_STATUS] = true
+	//dgnHasInstances[DGN_AIR_CONDITIONER_COMMAND] = true
+	//dgnHasInstances[DGN_DC_DIMMER_COMMAND_2] = true
 }
 
 // getInstanceKey - get the instance key for this frame. It will pull the instatnceID if we have one
-func getInstanceKey(f *RvcFrame) DGNInstanceKey {
+func getInstanceKey(f *RvcFrame) interface{} {
 	var dgn = f.DGN()
-	var hasInstance = dgnHasInstances[dgn]
-	if hasInstance {
+	//var hasInstance = dgnHasInstances[dgn]
+	//if hasInstance {
+	//	return DGNInstanceKey{dgn, f.Data[0]}
+	//}
+	switch dgn {
+	case DGN_ADDRESS_CLAIMED:
+		return AddressClaimedKey{f.GetSourceAddress()}
+	case DGN_AIR_CONDITIONER_STATUS:
 		return DGNInstanceKey{dgn, f.Data[0]}
-	} else {
-		return DGNInstanceKey{dgn, constants.DataNotAvailableUint8}
+	case DGN_DATA_PACKET:
+		return DataPacketKey{SourceAddress: f.GetSourceAddress(), PacketNumber: f.Data[0]}
+	case DGN_DC_DIMMER_COMMAND_2:
+		return DGNInstanceKey{dgn, f.Data[0]}
+	case DGN_DC_DIMMER_STATUS_3:
+		return DGNInstanceKey{dgn, f.Data[0]}
+	case DGN_DC_SOURCE_STATUS_1:
+		return DGNInstanceKey{dgn, f.Data[0]}
+	case DGN_INFORMATION_REQUEST:
+		return InformationRequestKey{f.GetSourceAddress()} // for this DGN the SA is the destination
+	case DGN_INITIAL_PACKET:
+		return InitialPacketKey{f.GetSourceAddress()}
+	case DGN_INVERTER_TEMPERATURE_STATUS:
+		return DGNInstanceKey{dgn, f.Data[0]}
+	case DGN_INVERTER_TEMPERATURE_STATUS_2:
+		return DGNInstanceKey{dgn, f.Data[0]}
+	case DGN_TANK_STATUS:
+		return DGNInstanceKey{dgn, f.Data[0]}
 	}
+
+	// TODO log
+	fmt.Printf("UNMAPPED DGN: %x\n", dgn)
+
+	return DGNInstanceKey{dgn, constants.DataNotAvailableUint8}
 
 }
 
@@ -145,11 +172,26 @@ func createRVCItem(f *RvcFrame) (RvcItemIF, bool) {
 			return ret, true
 		}
 
+	case DGN_INITIAL_PACKET:
+		{
+			var ret RvcItemIF
+			ret = &InitialPacket{}
+			//fmt.Printf("Initial Packet Called CALLED  %s\n", ret)
+			return ret, true
+		}
+
+	case DGN_DATA_PACKET:
+		{
+			var ret RvcItemIF
+			ret = &DataPacket{}
+			//fmt.Printf("Initial Packet Called CALLED  %s\n", ret)
+			return ret, true
+		}
 	}
 
 	// special case = the lower dgn is the desired address
 	if (dgn & 0xff00) == DGN_INFORMATION_REQUEST {
-		fmt.Printf("TRY INFORMATION REQUEST: %x", DGN_INFORMATION_REQUEST)
+		//fmt.Printf("TRY INFORMATION REQUEST: %x", DGN_INFORMATION_REQUEST)
 		var ret RvcItemIF
 		ret = &InformationRequest{}
 		return ret, true
@@ -157,7 +199,7 @@ func createRVCItem(f *RvcFrame) (RvcItemIF, bool) {
 
 	// NOTE: This should really be 0xeeff - but some SA's have bugs (ee42)
 	if (dgn & 0xff00) == DGN_ADDRESS_CLAIMED {
-		fmt.Printf("TRY ADDRESS CLAIMED:  %x for %x", DGN_ADDRESS_CLAIMED, dgn)
+		//fmt.Printf("TRY ADDRESS CLAIMED:  %x for %x", DGN_ADDRESS_CLAIMED, dgn)
 		var ret RvcItemIF
 		ret = &AddressClaimed{}
 		return ret, true

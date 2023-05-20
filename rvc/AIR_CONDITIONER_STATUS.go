@@ -34,6 +34,15 @@ type airConditionerStatus struct {
 	secondStageDeadBand float64 // Value range = 0 to 25.0 °C  Precision = 0.1 °C  This is the amount over the set point that will trigger a higher A/C output
 }
 
+//func (r *airConditionerStatus) GetInstanceKey() interface{} {
+//	r.lock.RLock()
+//	defer r.lock.RUnlock()
+//	return DGNInstanceKey{
+//		r.dgn,
+//		r.instance,
+//	}
+//}
+
 func (i *airConditionerStatus) String() string {
 	return fmt.Sprintf("acss DGN: %x(%s) SA: %d Instance: %d operatingModel: %d maxFanSpeed: %f maxOutputLevel: %f fanSpeed: %f acOutputLevel: %f deadBand %f, 2ndStagDeadBand2 %f",
 		i.dgn, i.GetName(),

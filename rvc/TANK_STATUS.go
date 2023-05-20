@@ -15,6 +15,10 @@ type tankStatus struct {
 	tankSize      uint16 // liter Value range = 0 to 65 530 l
 }
 
+//func (r *tankStatus) GetInstanceKey() interface{} {
+//	return DGNInstanceKey{r.dgn, r.instance}
+//}
+
 func (ts *tankStatus) GetInstance() uint8 {
 	return ts.instance
 }

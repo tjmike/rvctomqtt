@@ -25,6 +25,15 @@ type DCSourceStatus1 struct {
 	current        float64
 }
 
+//func (r *DCSourceStatus1) GetInstanceKey() interface{} {
+//	r.lock.RLock()
+//	defer r.lock.RUnlock()
+//	return DGNInstanceKey{
+//		r.dgn,
+//		r.deviceInstance,
+//	}
+//}
+
 func (i *DCSourceStatus1) String() string {
 	//var s = i.RvcItem.String()
 

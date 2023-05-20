@@ -125,10 +125,13 @@ func GetCANMessagesXX(ctx *context.Context, log *zap.Logger, messagePool *pool.P
 		//fmt.Println((*canFrame).String())
 
 		// do AFTER we build the frame!!!
-		log.Info(fmt.Sprintf("READ: %s", (*canFrame).String()))
+		// TODO CHANGE TO DEBUG LEVEL log.Info(fmt.Sprintf("READ: %s", (*canFrame).String()))
 
 		// Send the frame to the channel
 		fromSocket <- canFrame
 	}
-	f.Close()
+	closeErr := f.Close()
+	if closeErr != nil {
+		log.Warn(fmt.Sprintf("Error closing can reader socket. Message = %s", closeErr.Error()))
+	}
 }

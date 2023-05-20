@@ -28,6 +28,10 @@ type AddressClaimed struct {
 	arbitraryAddressCapable uint8 // Required. 1 – Node supports address claiming  0 – Node uses a fixed source address
 }
 
+//func (r *AddressClaimed) GetInstanceKey() interface{} {
+//	return AddressClaimedKey{r.GetSourceAddress()}
+//}
+
 func (r *AddressClaimed) Equals(o *AddressClaimed) bool {
 	if r.serialNumber != o.serialNumber {
 		return false
@@ -128,7 +132,6 @@ func (ac *AddressClaimed) SetPriority(p uint8) {
 }
 func (ac *AddressClaimed) String() string {
 	var s = ac.RvcItem.String()
-
 	s = fmt.Sprintf("%s SNR: %x mfgr code: %x node inst: %x func inst: %x, arbitrary addres: %x\n",
 		s, ac.serialNumber, ac.mfgrCode, ac.nodeInstance,
 		ac.functionInstance, ac.arbitraryAddressCapable)

@@ -1,5 +1,7 @@
 package rvc
 
+import "fmt"
+
 const (
 	DGN_DC_SOURCE_STATUS_1            uint32 = 0x1FFFD
 	DGN_DC_SOURCE_STATUS_1_SPYDER     uint32 = 0x10FFD
@@ -12,6 +14,8 @@ const (
 	DGN_INVERTER_TEMPERATURE_STATUS_2 uint32 = 0x1FDCB
 	DGN_INFORMATION_REQUEST           uint32 = 0x0EA00
 	DGN_ADDRESS_CLAIMED               uint32 = 0x0EE00
+	DGN_INITIAL_PACKET                uint32 = 0x0ECFF
+	DGN_DATA_PACKET                   uint32 = 0x0EBFF
 
 	DGN_PRODUCT_IDENTIFICATION_MESSAGE uint32 = 0xFEEB
 
@@ -27,13 +31,13 @@ import "sync"
 // DGNInstanceKey - a key to id a particular Instance (battery bank, light, etc.)
 // Not every DGN has a key and the associated name may be different for different systems
 // Some key names are part of the spec.
-type DGNInstanceKey struct {
-	DGN      uint32
-	Instance byte
-}
+//type DGNInstanceKey struct {
+//	DGN      uint32
+//	Instance byte
+//}
 
 // var DGNInstanceNames map[DGNInstanceKey]string = *new(map[DGNInstanceKey]string)
-var DGNInstanceNames map[DGNInstanceKey]string
+var DGNInstanceNames map[any]string
 
 // 1 Main Ceiling
 // 2 Main Entry
@@ -42,7 +46,7 @@ var DGNInstanceNames map[DGNInstanceKey]string
 
 func init() {
 	// NOTE: Envision this is read from a config file....
-	DGNInstanceNames = make(map[DGNInstanceKey]string)
+	DGNInstanceNames = make(map[any]string)
 
 	// these would be read from a config file
 	// consider how to set up and load a custom DGN and if ALL DGN info can be loaded from a config file
@@ -84,8 +88,15 @@ func init() {
 		tmp := make(map[DGNInstanceKey]string)
 		// make map for dimmer command based off status mapping
 		for k, v := range DGNInstanceNames {
-			k2 := DGNInstanceKey{DGN_DC_DIMMER_COMMAND_2, k.Instance}
-			tmp[k2] = v
+			kk, ok := k.(DGNInstanceKey)
+
+			if ok {
+				k2 := DGNInstanceKey{DGN_DC_DIMMER_COMMAND_2, kk.Instance}
+				tmp[k2] = v
+			} else {
+				// TODO user logger
+				fmt.Printf("Expected DGNInstanceKey but cast failed")
+			}
 		}
 		// set the instances in the original map - we don't want to set values while we are iterating....
 		for k, v := range tmp {
@@ -112,7 +123,7 @@ func init() {
 }
 
 // GetInstanceName - get the Instance name for the given key. Returns VAL/TRUE if found and ""/FALSE if not found.
-func GetInstanceName(k DGNInstanceKey) (string, bool) {
+func GetInstanceName(k struct{}) (string, bool) {
 	var ret, found = DGNInstanceNames[k]
 	if found {
 		return ret, true
