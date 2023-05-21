@@ -1,6 +1,7 @@
 package rvc
 
 import (
+	"encoding/json"
 	"fmt"
 	"rvctomqtt/constants"
 )
@@ -26,6 +27,16 @@ type AddressClaimed struct {
 	compatabilityField3     uint8
 	compatabilityField4     uint8
 	arbitraryAddressCapable uint8 // Required. 1 – Node supports address claiming  0 – Node uses a fixed source address
+}
+
+func (r *AddressClaimed) MarshalJSON() ([]byte, error) {
+	return json.Marshal(&struct {
+		SerialNumber uint32 `json:"serialNumber"`
+		MfgrCode     uint32 `json:"mfgrCode"`
+	}{
+		SerialNumber: r.serialNumber,
+		MfgrCode:     r.mfgrCode,
+	})
 }
 
 //func (r *AddressClaimed) GetInstanceKey() interface{} {

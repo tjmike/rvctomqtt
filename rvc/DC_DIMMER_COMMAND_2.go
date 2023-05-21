@@ -1,6 +1,7 @@
 package rvc
 
 import (
+	"encoding/json"
 	"fmt"
 	"rvctomqtt/constants"
 	"rvctomqtt/convert"
@@ -27,6 +28,16 @@ type DCDimmerCommand2 struct {
 	reserved uint8   //
 	//sourceAddress   byte    //
 	//lock            sync.RWMutex
+}
+
+func (r *DCDimmerCommand2) MarshalJSON() ([]byte, error) {
+	return json.Marshal(&struct {
+		DeviceInstance uint8 `json:"deviceInstance"`
+		Group          uint8 `json:"group"`
+	}{
+		DeviceInstance: r.deviceInstance,
+		Group:          r.group,
+	})
 }
 
 //	func (r *DCDimmerCommand2) GetInstanceKey() interface{} {

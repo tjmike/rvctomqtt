@@ -36,6 +36,7 @@ type RvcItem struct {
 	//      while insuring that others who may be also be querying the state get correct picture of things.
 	// Maybe there's some server goroutine that receives set/get message requests. So there's 1 goroutine that maintains
 	// state and this goroutine is event driven - it simply blocks awaiting set/get requests.
+	// TODO we expect to get rid of this - re-used ones will always e in context of single goroutine
 	lock sync.RWMutex
 }
 
@@ -108,6 +109,8 @@ func (i *RvcItem) GetInstance() byte {
 // RvcItemIF = Get methods are exported.
 type RvcItemIF interface {
 	//GetInstanceKey() interface{}
+
+	//MarshalJSON() ([]byte, error)
 
 	// GetName - the name of this DGN
 	GetName() string

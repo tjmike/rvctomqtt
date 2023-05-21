@@ -16,7 +16,7 @@ import (
 
 // RVCMessageHandler - we expect to see RvcFrames here. For now, we leave the channel interface as can frames and just
 // ignore data if it's not an RVC frame.
-func RVCMessageHandler(ctx *context.Context, log *zap.Logger, fromSocket chan *intf.CanFrameIF, pool *pool.Pool) {
+func RVCMessageHandler(ctx *context.Context, log *zap.Logger, fromSocket chan *intf.CanFrameIF, pool *pool.Pool, evts chan rvc.RvcItemIF) {
 
 	// interesting issue - when
 	log = utils.ApplyContext(ctx, log)
@@ -54,13 +54,17 @@ func RVCMessageHandler(ctx *context.Context, log *zap.Logger, fromSocket chan *i
 
 				// if timestamps are equal then it must have changed or is new
 				if rvcItem.GetTimestamp() == rvcItem.GetLastChanged() {
+
+					// TODO verify this is is sending by value
+					evts <- rvcItem
+
 					if log.Level() >= zapcore.InfoLevel {
 						// just to prevent noise....
 						if !rvc.Ignore(rvcItemPtr) {
 							log.Info(fmt.Sprintf("CHANGED: %s", rvcItem))
 						}
 					}
-					dumpItemViaReflection(rvcItemPtr, dgn)
+					DumpItemViaReflection(rvcItemPtr)
 				} else {
 					if log.Level() >= zapcore.DebugLevel {
 						log.Debug(fmt.Sprintf("no change detected  = %x existing = %s", rvcFrame.MessageBytes, rvcItem))
@@ -111,7 +115,9 @@ func logRawFrame(log *zap.Logger, rvcFrame *rvc.RvcFrame, dgn uint32) {
 	}
 }
 
-func dumpItemViaReflection(rvcItem *rvc.RvcItemIF, dgn uint32) {
+func DumpItemViaReflection(rvcItem *rvc.RvcItemIF) {
+
+	var dgn = (*rvcItem).GetDGN()
 
 	// let's see what we have
 	var reflectedType = reflect.TypeOf(*rvcItem)

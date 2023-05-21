@@ -11,6 +11,7 @@ import (
 	"rvctomqtt/pform"
 	"rvctomqtt/pool"
 	"rvctomqtt/rvc"
+	"rvctomqtt/rvcChangeListener"
 
 	//"rvctomqtt/rvc"
 	"time"
@@ -21,6 +22,9 @@ func main() {
 	print(runtime.GOMAXPROCS(0))
 	print("\n")
 
+	// This channel sends change event  messages (not pointer)
+	rvcChangeEvents := make(chan rvc.RvcItemIF, 32)
+
 	// Listen on this to process the raw can message
 	fromSocket := make(chan *intf.CanFrameIF, 32)
 
@@ -28,7 +32,7 @@ func main() {
 	// that implements it
 	//var frameFactoryInterface intf.CanFrameFactory = &can.CanFrameFactory{}
 	var frameFactoryInterface intf.CanFrameFactory = &rvc.RVCFrameFactory{}
-	var p = pool.NewPool(&frameFactoryInterface)
+	var dataFramePool = pool.NewPool(&frameFactoryInterface)
 
 	prodConfig := zap.NewProductionConfig()
 	prodConfig.Encoding = "console"
@@ -50,7 +54,7 @@ func main() {
 	var ctx1 context.Context = context.Background()
 	ctx1 = context.WithValue(ctx1, "logFields", logFields)
 
-	go pform.GetRVCMessages(&ctx1, log, p, fromSocket)
+	go pform.GetRVCMessages(&ctx1, log, dataFramePool, fromSocket)
 
 	logFields2 := make([]zap.Field, 1)
 	logFields2[0] = zap.Field{
@@ -63,7 +67,9 @@ func main() {
 	var ctx2 context.Context = context.Background()
 	ctx2 = context.WithValue(ctx2, "logFields", logFields2)
 
-	go handler.RVCMessageHandler(&ctx2, log, fromSocket, p)
+	go handler.RVCMessageHandler(&ctx2, log, fromSocket, dataFramePool, rvcChangeEvents)
+
+	go rvcChangeListener.Listen(rvcChangeEvents)
 
 	for {
 		fmt.Printf("Sleep # goRoutines = %d\n", runtime.NumGoroutine())
