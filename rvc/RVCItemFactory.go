@@ -21,7 +21,7 @@ var rvcItemMap map[interface{}]*RvcItemIF
 // dgnHasInstances - a singleton map that tells us if this DGN has an instance field. Since we maintain the state of everything
 // we need to know if a particular DGN has multiple instances. We need to know this BEFORE we create the instance.
 // TODO: This is fragile - we need to keep it in sync - need a better approach
-//       Consider a "const" struct that has metadata properties (name, hasInstance, etc.)
+//       Consider a "const" struct that has metadata properties (Name, hasInstance, etc.)
 //       This struct could be hardcoded or loaded from a config file
 //       Maybe this struct could also provide a function to create an instance?
 
@@ -61,12 +61,15 @@ func init() {
 	//dgnHasInstances[DGN_DC_DIMMER_COMMAND_2] = true
 }
 
-// getInstanceKey - get the instance key for this frame. It will pull the instatnceID if we have one
+// getInstanceKey - get the instance key for this frame. It will pull the instanceID if we have one
+// TODO this is a bit fragile and prone to error - we need to remember to add things here and we need
+//
+//	to have knowledge of the message structure. Look for a better option.
 func getInstanceKey(f *RvcFrame) interface{} {
 	var dgn = f.DGN()
-	//var hasInstance = dgnHasInstances[dgn]
+	//var hasInstance = dgnHasInstances[DGN]
 	//if hasInstance {
-	//	return DGNInstanceKey{dgn, f.Data[0]}
+	//	return DGNInstanceKey{DGN, f.Data[0]}
 	//}
 	switch dgn {
 	case DGN_ADDRESS_CLAIMED:
@@ -80,6 +83,8 @@ func getInstanceKey(f *RvcFrame) interface{} {
 	case DGN_DC_DIMMER_STATUS_3:
 		return DGNInstanceKey{dgn, f.Data[0]}
 	case DGN_DC_SOURCE_STATUS_1:
+		return DGNInstanceKey{dgn, f.Data[0]}
+	case DGN_DC_SOURCE_STATUS_1_SPYDER:
 		return DGNInstanceKey{dgn, f.Data[0]}
 	case DGN_INFORMATION_REQUEST:
 		return InformationRequestKey{f.GetSourceAddress()} // for this DGN the SA is the destination
@@ -107,9 +112,9 @@ func createRVCItem(f *RvcFrame) (RvcItemIF, bool) {
 	switch dgn {
 	case DGN_DC_SOURCE_STATUS_1_SPYDER:
 		{
-			//var name = DGNInstanceNames[DGN_DC_SOURCE_STATUS_1_SPYDER]
+			//var Name = DGNInstanceNames[DGN_DC_SOURCE_STATUS_1_SPYDER]
 			var ret RvcItemIF
-			ret = &DCSourceStatus1{}
+			ret = &DCSourceStatus1Spyder{}
 			return ret, true
 		}
 	case DGN_DC_DIMMER_STATUS_3:
@@ -189,7 +194,7 @@ func createRVCItem(f *RvcFrame) (RvcItemIF, bool) {
 		}
 	}
 
-	// special case = the lower dgn is the desired address
+	// special case = the lower DGN is the desired address
 	if (dgn & 0xff00) == DGN_INFORMATION_REQUEST {
 		//fmt.Printf("TRY INFORMATION REQUEST: %x", DGN_INFORMATION_REQUEST)
 		var ret RvcItemIF
@@ -199,7 +204,7 @@ func createRVCItem(f *RvcFrame) (RvcItemIF, bool) {
 
 	// NOTE: This should really be 0xeeff - but some SA's have bugs (ee42)
 	if (dgn & 0xff00) == DGN_ADDRESS_CLAIMED {
-		//fmt.Printf("TRY ADDRESS CLAIMED:  %x for %x", DGN_ADDRESS_CLAIMED, dgn)
+		//fmt.Printf("TRY ADDRESS CLAIMED:  %x for %x", DGN_ADDRESS_CLAIMED, DGN)
 		var ret RvcItemIF
 		ret = &AddressClaimed{}
 		return ret, true

@@ -20,6 +20,9 @@ const (
 	DGN_PRODUCT_IDENTIFICATION_MESSAGE uint32 = 0xFEEB
 
 	INSTANCE_LIGHT_PASSENGER_TASK uint8 = 14
+	INSTANCE_REAR_AC_UNIT         uint8 = 1
+	INSTANCE_MID_AC_UNIT          uint8 = 2
+	INSTANCE_FRONT_AC_UNIT        uint8 = 3
 
 	RVC_DATA_NOT_AVAILABLE uint8 = 255
 )
@@ -29,7 +32,7 @@ import "sync"
 */
 
 // DGNInstanceKey - a key to id a particular Instance (battery bank, light, etc.)
-// Not every DGN has a key and the associated name may be different for different systems
+// Not every DGN has a key and the associated Name may be different for different systems
 // Some key names are part of the spec.
 //type DGNInstanceKey struct {
 //	DGN      uint32
@@ -53,8 +56,14 @@ func init() {
 	// It's not (yet) clear how to set up dgnHasInstances with proper data types and fields from a config file
 	// Maybe a generic Number/Value type like Java Number?
 	DGNInstanceNames[DGNInstanceKey{DGN: DGN_DC_SOURCE_STATUS_1_SPYDER, Instance: 1}] = "Main House Battery Bank"
+	DGNInstanceNames[DGNInstanceKey{DGN: DGN_DC_SOURCE_STATUS_1_SPYDER, Instance: 2}] = "Chassis Start Battery"
+	DGNInstanceNames[DGNInstanceKey{DGN: DGN_DC_SOURCE_STATUS_1_SPYDER, Instance: 3}] = "Secondary House Battery Bank"
+	DGNInstanceNames[DGNInstanceKey{DGN: DGN_DC_SOURCE_STATUS_1_SPYDER, Instance: 4}] = "Generator Starter Battery"
+
 	DGNInstanceNames[DGNInstanceKey{DGN: DGN_DC_SOURCE_STATUS_1, Instance: 1}] = "Main House Battery Bank"
 	DGNInstanceNames[DGNInstanceKey{DGN: DGN_DC_SOURCE_STATUS_1, Instance: 2}] = "Chassis Start Battery"
+	DGNInstanceNames[DGNInstanceKey{DGN: DGN_DC_SOURCE_STATUS_1, Instance: 3}] = "Secondary House Battery Bank"
+	DGNInstanceNames[DGNInstanceKey{DGN: DGN_DC_SOURCE_STATUS_1, Instance: 4}] = "Generator Starter Battery"
 
 	DGNInstanceNames[DGNInstanceKey{DGN: DGN_DC_DIMMER_STATUS_3, Instance: 1}] = "Main Ceiling"
 	DGNInstanceNames[DGNInstanceKey{DGN: DGN_DC_DIMMER_STATUS_3, Instance: 2}] = "Main Entry"
@@ -84,6 +93,10 @@ func init() {
 	DGNInstanceNames[DGNInstanceKey{DGN: DGN_DC_DIMMER_STATUS_3, Instance: 91}] = "Exterior Road"
 	DGNInstanceNames[DGNInstanceKey{DGN: DGN_DC_DIMMER_STATUS_3, Instance: 92}] = "Exterior Porch"
 
+	DGNInstanceNames[DGNInstanceKey{DGN: DGN_AIR_CONDITIONER_STATUS, Instance: INSTANCE_REAR_AC_UNIT}] = "Rear AC"
+	DGNInstanceNames[DGNInstanceKey{DGN: DGN_AIR_CONDITIONER_STATUS, Instance: INSTANCE_MID_AC_UNIT}] = "Mid AC"
+	DGNInstanceNames[DGNInstanceKey{DGN: DGN_AIR_CONDITIONER_STATUS, Instance: INSTANCE_FRONT_AC_UNIT}] = "Front AC"
+	//
 	{
 		tmp := make(map[DGNInstanceKey]string)
 		// make map for dimmer command based off status mapping
@@ -91,8 +104,10 @@ func init() {
 			kk, ok := k.(DGNInstanceKey)
 
 			if ok {
-				k2 := DGNInstanceKey{DGN_DC_DIMMER_COMMAND_2, kk.Instance}
-				tmp[k2] = v
+				if kk.DGN == DGN_DC_DIMMER_STATUS_3 {
+					k2 := DGNInstanceKey{DGN_DC_DIMMER_COMMAND_2, kk.Instance}
+					tmp[k2] = v
+				}
 			} else {
 				// TODO user logger
 				fmt.Printf("Expected DGNInstanceKey but cast failed")
@@ -122,8 +137,8 @@ func init() {
 	DGNInstanceNames[DGNInstanceKey{DGN: DGN_TANK_STATUS, Instance: 19}] = "LPG (2)"
 }
 
-// GetInstanceName - get the Instance name for the given key. Returns VAL/TRUE if found and ""/FALSE if not found.
-func GetInstanceName(k struct{}) (string, bool) {
+// GetInstanceName - get the Instance Name for the given key. Returns VAL/TRUE if found and ""/FALSE if not found.
+func GetInstanceName(k any) (string, bool) {
 	var ret, found = DGNInstanceNames[k]
 	if found {
 		return ret, true

@@ -19,22 +19,22 @@ func (i *AddressClaim) SetDesiredSourceAddress(sa uint8) {
 	defer i.lock.RUnlock()
 	i.desiredSA = sa
 	// The desired SA also impacts the DGN
-	var updated = i.dgn & 0xffffff00
+	var updated = i.DGN & 0xffffff00
 	updated |= uint32(sa)
-	i.dgn = updated
+	i.DGN = updated
 
 }
-func (i *AddressClaim) SetDGN(dgn uint32) {
+func (i *AddressClaim) SetDGN(DGN uint32) {
 	i.lock.RLock()
 	defer i.lock.RUnlock()
-	i.dgn = dgn
-	i.name = dGNtoName[dgn]
+	i.DGN = DGN
+	i.Name = dGNtoName[DGN]
 }
 
 func (i *AddressClaim) SetPriority(p uint8) {
 	i.lock.RLock()
 	defer i.lock.RUnlock()
-	i.priority = p
+	i.Priority = p
 }
 
 func (i *AddressClaim) String() string {
@@ -50,11 +50,11 @@ func (r *AddressClaim) Init(from *RvcFrame) {
 	r.RvcItem.Init(from)
 
 	// TODO some test for all these bits....
-	var desiredSA = uint8(r.dgn & 0x0ff)
+	var desiredSA = uint8(r.DGN & 0x0ff)
 
 	if desiredSA != r.desiredSA {
 		r.desiredSA = desiredSA
-		r.lastChanged = r.timestamp
+		r.LastChanged = r.Timestamp
 	}
 
 }
@@ -79,7 +79,7 @@ func (r *AddressClaim) CreateFrame() *RvcFrame {
 	}
 
 	// create the DGN - ignoring the SA and setting it to the desired SA
-	var reqDGN = r.dgn
+	var reqDGN = r.DGN
 	reqDGN = reqDGN & 0xffffff00
 	reqDGN = reqDGN | (uint32(r.desiredSA))
 
@@ -95,7 +95,7 @@ func (r *AddressClaim) Equals(o *AddressClaim) bool {
 	if r.desiredSA != o.desiredSA {
 		return false
 	}
-	if r.dgn != o.dgn {
+	if r.DGN != o.DGN {
 		return false
 	}
 	return true

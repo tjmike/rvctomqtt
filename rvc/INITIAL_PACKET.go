@@ -13,16 +13,26 @@ type InitialPacket struct {
 	dgn           uint32 // byte5 LSB byte6 lsb byte7 < MSB
 }
 
+func (r *InitialPacket) getMessageLength() uint16 {
+	return r.messageLength
+}
+func (r *InitialPacket) GetPacketCount() uint8 {
+	return r.packetCount
+}
+func (r *InitialPacket) GetRequestedDGN() uint32 {
+	return r.dgn
+}
+
 // GetInstanceKey - we can really only loosely tie initial packet to DATA_PACKET to that end we just keep
 // track of the source address and use this to tie the initial packet to data packets.
 // the
 //func (r *InitialPacket) GetInstanceKey() interface{} {
-//	return InitialPacketKey{r.sourceAddress}
+//	return InitialPacketKey{r.SourceAddress}
 //}
 
 func (r *InitialPacket) String() string {
 	var s = r.RvcItem.String()
-	s = fmt.Sprintf("%s reserved: %x messageLength: %d packetCount: %d dgn: %x\n",
+	s = fmt.Sprintf("%s reserved: %x messageLength: %d packetCount: %d DGN: %x\n",
 		s,
 		r.reserved,
 		r.messageLength,
@@ -32,8 +42,6 @@ func (r *InitialPacket) String() string {
 	return s
 }
 func (r *InitialPacket) Init(from *RvcFrame) {
-	r.lock.Lock()
-	defer r.lock.Unlock()
 	r.RvcItem.Init(from)
 	var dataBytes = &from.Data
 

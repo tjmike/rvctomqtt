@@ -11,6 +11,7 @@ import (
 	"rvctomqtt/can"
 	"rvctomqtt/constants"
 	"rvctomqtt/convert"
+	"rvctomqtt/rvc"
 	"rvctomqtt/utils"
 	"time"
 )
@@ -388,6 +389,22 @@ func main() {
 	//var f4 = field[float64]{name: "f4", value: 2}
 	//var f5 = field[bit2]{name: "f5", value: 2}
 	//var ff = []any{f1, f2, f3, f4, f5}
+
+	var foo map[any]string = make(map[any]string)
+
+	foo[rvc.DGNInstanceKey{
+		DGN:      1,
+		Instance: 1,
+	}] = "A"
+
+	fmt.Printf("l = %d", len(foo))
+
+	var bar = foo[rvc.DGNInstanceKey{1, 1}]
+	fmt.Printf("l = %s", bar)
+
+	if 5 > 1 {
+		return
+	}
 
 	var tt = thingA{}
 

@@ -16,7 +16,7 @@ const SA_ADDRESS_CLAIM uint8 = 254
 //	maintaining state...
 type InformationRequest struct {
 	RvcItem
-	destinationAddress uint8 // dgn low ff=global , 254 = no address, for address claim request
+	destinationAddress uint8 // DGN low ff=global , 254 = no address, for address claim request
 	isAddressClaim     bool
 	desiredDGN         uint32
 	instance           uint8
@@ -31,62 +31,46 @@ type InformationRequest struct {
 //}
 
 func (i *InformationRequest) SetDesiredDGN(desiredDGN uint32) {
-	i.lock.RLock()
-	defer i.lock.RUnlock()
 	i.desiredDGN = desiredDGN
 
 }
 
 func (i *InformationRequest) GetDesiredDGN() uint32 {
-	i.lock.RLock()
-	defer i.lock.RUnlock()
 	return i.desiredDGN
 }
 
 func (i *InformationRequest) SetInstance(inst uint8) {
-	i.lock.RLock()
-	defer i.lock.RUnlock()
 	i.instance = inst
 }
 
 func (i *InformationRequest) SetInstance2(inst uint8) {
-	i.lock.RLock()
-	defer i.lock.RUnlock()
 	i.instance2 = inst
 }
 
 // SetAsAddressClaim - set the request fields to be address claim including the desiredSA
 func (i *InformationRequest) SetAsAddressClaim(desiredSA uint8) {
-	i.lock.RLock()
-	defer i.lock.RUnlock()
 	i.destinationAddress = desiredSA
-	i.dgn = DGN_INFORMATION_REQUEST | uint32(desiredSA) // TODO maybe not needed here... done when create frame
+	i.DGN = DGN_INFORMATION_REQUEST | uint32(desiredSA) // TODO maybe not needed here... done when create frame
 	i.desiredDGN = DGN_DESIRED_ADDRESS_CLAIM
-	i.sourceAddress = SA_ADDRESS_CLAIM
+	i.SourceAddress = SA_ADDRESS_CLAIM
 	i.isAddressClaim = true
 	i.instance = 0xff
 	i.instance2 = 0xff
 }
 func (i *InformationRequest) GetDestinationAddress() uint8 {
-	i.lock.RLock()
-	defer i.lock.RUnlock()
 	return i.destinationAddress
 
 }
 
 func (i *InformationRequest) SetSourceAddress(sa uint8) {
-	i.lock.RLock()
-	defer i.lock.RUnlock()
-	i.sourceAddress = sa
+	i.SourceAddress = sa
 }
 func (i *InformationRequest) SetDestinationAddress(sa uint8) {
-	i.lock.RLock()
-	defer i.lock.RUnlock()
 	i.destinationAddress = sa
 	// The destination request  also impacts the DGN
-	var updated = i.dgn & 0xffffff00
+	var updated = i.DGN & 0xffffff00
 	updated |= uint32(sa)
-	i.dgn = updated
+	i.DGN = updated
 
 }
 
@@ -94,21 +78,17 @@ func (i *InformationRequest) SetDestinationAddress(sa uint8) {
 // to set the source address separately then do it AFTER calling this
 // method
 func (i *InformationRequest) SetDGN(dgn uint32) {
-	i.lock.RLock()
-	defer i.lock.RUnlock()
-	i.dgn = dgn
-	i.name = DGNName(dgn)
+	i.DGN = dgn
+	i.Name = DGNName(dgn)
 }
 
 func (i *InformationRequest) SetPriority(p uint8) {
-	i.lock.RLock()
-	defer i.lock.RUnlock()
-	i.priority = p
+	i.Priority = p
 }
 
 func (i *InformationRequest) String() string {
 	var s = i.RvcItem.String()
-	// destinationAddress uint8 // dgn low ff=global , 254 = no address, for address claim request
+	// destinationAddress uint8 // DGN low ff=global , 254 = no address, for address claim request
 	//	isAddressClaim     bool
 	//	desiredDGN         uint32
 	//	instance           uint8
@@ -123,12 +103,10 @@ func (i *InformationRequest) String() string {
 }
 
 func (r *InformationRequest) Init(from *RvcFrame) {
-	r.lock.Lock()
-	defer r.lock.Unlock()
 	r.RvcItem.Init(from)
 
 	// TODO some test for all these bits....
-	var destAddr = uint8(r.dgn & 0x0ff)
+	var destAddr = uint8(r.DGN & 0x0ff)
 
 	var changed = false
 	if destAddr != r.destinationAddress {
@@ -163,7 +141,7 @@ func (r *InformationRequest) Init(from *RvcFrame) {
 	}
 
 	if changed {
-		r.lastChanged = r.timestamp
+		r.LastChanged = r.Timestamp
 
 	}
 }
@@ -171,8 +149,6 @@ func (r *InformationRequest) Init(from *RvcFrame) {
 // CreateFrame - create the data frame to be sent in order to issue the command
 func (r *InformationRequest) CreateFrame() *RvcFrame {
 	var ret = RvcFrame{}
-	r.lock.Lock()
-	defer r.lock.Unlock()
 
 	// TODO we really should not have to do this here !
 	ret.SetEFF_RTR_ERR_Flag(constants.CAN_EFF_FLAG2)
@@ -194,7 +170,7 @@ func (r *InformationRequest) CreateFrame() *RvcFrame {
 	ret.SetPGNValue(pgnval)
 	ret.SetPriority(0x06)
 	ret.Length = 8
-	ret.SetSourceAddress(r.sourceAddress)
+	ret.SetSourceAddress(r.SourceAddress)
 	ret.SetCanMessage()
 	return &ret
 }

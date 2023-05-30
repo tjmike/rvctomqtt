@@ -138,10 +138,10 @@ func TestDCDimmer2CreateFrame(t *testing.T) {
 	c.delayDuration = 0
 	c.desiredBrightness = 100 //         1100 1000 128+64 192
 	c.deviceInstance = 2
-	c.dgn = DGN_DC_DIMMER_COMMAND_2 // 0x1FEDB
-	c.name = DGNName(c.dgn)
-	c.priority = 0x06
-	c.sourceAddress = 0x10
+	c.DGN = DGN_DC_DIMMER_COMMAND_2 // 0x1FEDB
+	c.Name = DGNName(c.DGN)
+	c.Priority = 0x06
+	c.SourceAddress = 0x10
 
 	// DGN : 0x1FEDB
 	// PRI  : 6

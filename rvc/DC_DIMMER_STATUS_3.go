@@ -33,78 +33,52 @@ type DCDimmerStatus3 struct {
 //		r.lock.RLock()
 //		defer r.lock.RUnlock()
 //		return DGNInstanceKey{
-//			r.dgn,
+//			r.DGN,
 //			r.deviceInstance,
 //		}
 //	}
 func (i *DCDimmerStatus3) getInterlockStatus() constants.Uint2 {
-	i.lock.RLock()
-	defer i.lock.RUnlock()
 	return i.interlockStatus
 }
 
 func (i *DCDimmerStatus3) getLoadStatus() constants.Uint2 {
-	i.lock.RLock()
-	defer i.lock.RUnlock()
 	return i.loadStatus
 }
 
 func (i *DCDimmerStatus3) getReserved() constants.Uint2 {
-	i.lock.RLock()
-	defer i.lock.RUnlock()
 	return i.reserved
 }
 func (i *DCDimmerStatus3) getUnderCurrent() constants.Uint2 {
-	i.lock.RLock()
-	defer i.lock.RUnlock()
 	return i.undercurrent
 }
 func (i *DCDimmerStatus3) GetLastCommand() uint8 {
-	i.lock.RLock()
-	defer i.lock.RUnlock()
 	return i.lastCommand
 }
 func (i *DCDimmerStatus3) GetDelayDuration() uint8 {
-	i.lock.RLock()
-	defer i.lock.RUnlock()
 	return i.delayDuration
 }
 func (i *DCDimmerStatus3) GetEnableStatus() constants.Uint2 {
-	i.lock.RLock()
-	defer i.lock.RUnlock()
 	return i.enableStatus
 }
 func (i *DCDimmerStatus3) GetOverrideStatus() constants.Uint2 {
-	i.lock.RLock()
-	defer i.lock.RUnlock()
 	return i.overrideSatus
 }
 func (i *DCDimmerStatus3) GetOverCurrentStatus() constants.Uint2 {
-	i.lock.RLock()
-	defer i.lock.RUnlock()
 	return i.overCurrentStatus
 }
 func (i *DCDimmerStatus3) GetLockItem() constants.Uint2 {
-	i.lock.RLock()
-	defer i.lock.RUnlock()
 	return i.lockitem
 }
 
 func (i *DCDimmerStatus3) GetBrightness() float64 {
-	i.lock.RLock()
-	defer i.lock.RUnlock()
 	return i.brightness
 }
 
 func (i *DCDimmerStatus3) GetGroup() uint8 {
-	i.lock.RLock()
-	defer i.lock.RUnlock()
 	return i.group
 }
 func (i *DCDimmerStatus3) GetInstanceName() string {
-	i.lock.RLock()
-	defer i.lock.RUnlock()
-	var k = DGNInstanceKey{DGN: i.dgn, Instance: i.deviceInstance}
+	var k = DGNInstanceKey{DGN: i.DGN, Instance: i.deviceInstance}
 	var n, ok = DGNInstanceNames[k]
 	if ok {
 		return n
@@ -113,13 +87,11 @@ func (i *DCDimmerStatus3) GetInstanceName() string {
 	}
 }
 func (i *DCDimmerStatus3) String() string {
-	i.lock.RLock()
-	defer i.lock.RUnlock()
 	//var s = i.RvcItem.String()
 	var iname = i.GetInstanceName()
 	return fmt.Sprintf("%s DGN: %x (%s) SA: %x Instance: %d (%s) group: %d brigntness: %f lockitem: %d overcurrent: %d enable: %d delayDuration: %d last %d interlock %d, load status %d reserved: %d undercurrent: %d memval: %d",
 		i.GetTimestamp().Format("01-02-2006 15:04:05.000000"),
-		i.dgn, i.name,
+		i.DGN, i.Name,
 		i.GetSourceAddress(),
 		i.deviceInstance, iname, i.group, i.brightness, i.lockitem, i.overrideSatus, i.enableStatus, i.delayDuration,
 		i.lastCommand, i.interlockStatus, i.loadStatus, i.reserved, i.undercurrent, i.masterMemoryVal,
@@ -129,14 +101,9 @@ func (i *DCDimmerStatus3) String() string {
 }
 
 func (r *DCDimmerStatus3) GetInstance() byte {
-	r.lock.RLock()
-	defer r.lock.RUnlock()
 	return r.deviceInstance
 }
-
 func (r *DCDimmerStatus3) Init(from *RvcFrame) {
-	r.lock.RLock()
-	defer r.lock.RUnlock()
 	r.RvcItem.Init(from)
 
 	// TODO some test for all these bits....
@@ -151,7 +118,7 @@ func (r *DCDimmerStatus3) Init(from *RvcFrame) {
 		}
 		(*r).deviceInstance = utils.GetByte(dataBytes, 0)
 	}
-	// test for changed and if changed set last changed timestamp
+	// test for changed and if changed set last changed Timestamp
 	var changed = false
 	{
 		var tmp = utils.GetByte(dataBytes, 1)
@@ -237,7 +204,7 @@ func (r *DCDimmerStatus3) Init(from *RvcFrame) {
 	}
 
 	if changed {
-		r.lastChanged = r.timestamp
+		r.LastChanged = r.Timestamp
 	}
 
 }

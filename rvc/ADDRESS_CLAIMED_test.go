@@ -18,7 +18,7 @@ func TestAddressClaimed(t *testing.T) {
 	//	// bit 31: extended frame format (EFF) (MSB)
 	//
 	// 29 bit can frame
-	// 26-28 priority
+	// 26-28 Priority
 	// 25 Reserved
 	// 24 DGN High
 	// 16-23 DGN (H)
@@ -67,7 +67,7 @@ func TestAddressClaimed(t *testing.T) {
 	f.BuildCanFrameX()
 	claimed.Init(&f)
 
-	//if raw[15] == 0 && claimed.sourceAddress == 0 {
+	//if raw[15] == 0 && claimed.SourceAddress == 0 {
 	//	t.Errorf("WTF\n")
 	//}
 
@@ -145,10 +145,10 @@ func TestAddressClaimed(t *testing.T) {
 func TestAddressClaimedCreateFrame(t *testing.T) {
 
 	var addrClaimed = AddressClaimed{}
-	addrClaimed.dgn = DGN_ADDRESS_CLAIMED
-	addrClaimed.name = DGNName(addrClaimed.dgn)
-	addrClaimed.priority = 0x06
-	addrClaimed.sourceAddress = 0xFE
+	addrClaimed.DGN = DGN_ADDRESS_CLAIMED
+	addrClaimed.Name = DGNName(addrClaimed.DGN)
+	addrClaimed.Priority = 0x06
+	addrClaimed.SourceAddress = 0xFE
 	addrClaimed.SetSourceAddress(0x11)
 	// set AFTER setting up the DGN so it can be update correctly
 	addrClaimed.SetSerialNumber(0xFF)

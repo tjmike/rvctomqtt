@@ -9,7 +9,7 @@ const (
 	BIT2 FieldDataType = "bit2"
 
 	instance          FieldName = "instance"
-	PRIORITY          FieldName = "priority"
+	PRIORITY          FieldName = "Priority"
 	VOLTAGE           FieldName = "voltage"
 	CURRENT           FieldName = "current"
 	group             FieldName = "group"

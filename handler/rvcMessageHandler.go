@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -18,6 +19,7 @@ import (
 // ignore data if it's not an RVC frame.
 func RVCMessageHandler(ctx *context.Context, log *zap.Logger, fromSocket chan *intf.CanFrameIF, pool *pool.Pool, evts chan rvc.RvcItemIF) {
 
+	var renotifySeconds = time.Second * 30 // if this amt of time has passed since we last fired an event then fire one even if no change
 	// interesting issue - when
 	log = utils.ApplyContext(ctx, log)
 
@@ -53,8 +55,18 @@ func RVCMessageHandler(ctx *context.Context, log *zap.Logger, fromSocket chan *i
 				rvcItem.Init(rvcFrame)
 
 				// if timestamps are equal then it must have changed or is new
-				if rvcItem.GetTimestamp() == rvcItem.GetLastChanged() {
 
+				var changed = rvcItem.GetTimestamp() == rvcItem.GetLastChanged()
+				var notifyAnyway = false
+				if !changed {
+					var deltaT = time.Now().Sub(rvcItem.GetLastNotified())
+					if deltaT >= renotifySeconds {
+						notifyAnyway = true
+					}
+				}
+				if changed || notifyAnyway {
+
+					(*rvcItemPtr).SetLastNotified()
 					// TODO verify this is is sending by value
 					evts <- rvcItem
 
@@ -115,7 +127,9 @@ func logRawFrame(log *zap.Logger, rvcFrame *rvc.RvcFrame, dgn uint32) {
 	}
 }
 
-func DumpItemViaReflection(rvcItem *rvc.RvcItemIF) {
+func DumpItemViaReflection(rvcItem *rvc.RvcItemIF) string {
+
+	var jsonSB strings.Builder
 
 	var dgn = (*rvcItem).GetDGN()
 
@@ -129,10 +143,13 @@ func DumpItemViaReflection(rvcItem *rvc.RvcItemIF) {
 	var _, ok = reflectedType.MethodByName("GetName")
 	if ok {
 
+		jsonSB.WriteString("{")
+
 		inputs := make([]reflect.Value, 0)
 		var getNameResults = reflectedValue.MethodByName("GetName").Call(inputs)
 		var dgnName = getNameResults[0].Interface()
 		var instanceName interface{} = "N/A"
+
 		// We assume if the item has GetName that it also has GetInstanceName
 		var mbn = reflectedValue.MethodByName("GetInstanceName")
 		//fmt.Printf("\tMBN: %s\n", mbn.Kind())
@@ -142,6 +159,7 @@ func DumpItemViaReflection(rvcItem *rvc.RvcItemIF) {
 		}
 		fmt.Printf("\t%x %s(%s)\n", dgn, dgnName, instanceName)
 		var nmethods = reflectedType.NumMethod()
+		var comma = false
 		for i := 0; i < nmethods; i++ {
 			var xmethod = reflectedType.Method(i)
 			var xmtype = xmethod.Type
@@ -152,9 +170,17 @@ func DumpItemViaReflection(rvcItem *rvc.RvcItemIF) {
 				if strings.HasPrefix(xmname, "Get") {
 					var methodOutputDataType = xmtype.Out(0).Name()
 
+					if comma {
+						jsonSB.WriteString(",")
+					} else {
+						comma = true
+					}
+
+					jsonSB.WriteString(fmt.Sprintf("\"%s\":", xmname[3:])) // method name without the "Get"
 					if methodOutputDataType == "uint8" || methodOutputDataType == "Uint2" || methodOutputDataType == "uint16" || methodOutputDataType == "uint32" {
 						var XXX = reflectedValue.Method(i).Call(inputs)
 						var yyy = XXX[0].Uint()
+						jsonSB.WriteString(fmt.Sprintf("%d", yyy))
 						fmt.Printf("\t\t%s(%s)=%d\n", xmname, methodOutputDataType, yyy)
 
 					} else if methodOutputDataType == "Time" {
@@ -163,19 +189,30 @@ func DumpItemViaReflection(rvcItem *rvc.RvcItemIF) {
 						var yyy = XXX[0]
 						var zzz = yyy.Interface()
 						var zzz2 = zzz.(time.Time)
+						jsonSB.WriteString(fmt.Sprintf("%s", jsonTime(zzz2)))
+
 						fmt.Printf("\t\t%s(%s)=%s\n", xmname, methodOutputDataType, zzz2.Format("01-02-2006 15:04:05.000000"))
 
 					} else if methodOutputDataType == "string" {
 						inputs := make([]reflect.Value, 0)
 						var XXX = reflectedValue.Method(i).Call(inputs)
 						var yyy = XXX[0]
+						var zzz = yyy.String()
+
+						// TODO this needs to be escaped
+						jsonSB.WriteString(fmt.Sprintf("%s", jsonEscape(zzz)))
+
 						fmt.Printf("\t\t%s(%s)=%s\n", xmname, methodOutputDataType, yyy)
 					} else if methodOutputDataType == "float64" {
 						inputs := make([]reflect.Value, 0)
 						var XXX = reflectedValue.Method(i).Call(inputs)
 						var yyy = XXX[0].Float()
+						jsonSB.WriteString(fmt.Sprintf("%f", yyy))
+
 						fmt.Printf("\t\t%s(%s)=%f\n", xmname, methodOutputDataType, yyy)
 					} else {
+						jsonSB.WriteString(fmt.Sprintf("%s", "ERROR"))
+
 						fmt.Printf("\t\t(UNSUPPORTED TYPE)   name = %s type = %s \n", xmname, methodOutputDataType)
 					}
 				}
@@ -183,5 +220,24 @@ func DumpItemViaReflection(rvcItem *rvc.RvcItemIF) {
 		}
 
 	}
+	jsonSB.WriteString("}")
 
+	return jsonSB.String()
+	//fmt.Printf("JSON:  %s}\n", jsonSB.String())
+
+}
+
+func jsonEscape(i string) string {
+	b, err := json.Marshal(i)
+	if err != nil {
+		return "ERROR"
+	}
+	return string(b)
+}
+func jsonTime(t time.Time) string {
+	b, err := json.Marshal(t)
+	if err != nil {
+		return "ERROR"
+	}
+	return string(b)
 }

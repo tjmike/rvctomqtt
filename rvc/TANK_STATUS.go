@@ -16,7 +16,7 @@ type tankStatus struct {
 }
 
 //func (r *tankStatus) GetInstanceKey() interface{} {
-//	return DGNInstanceKey{r.dgn, r.instance}
+//	return DGNInstanceKey{r.DGN, r.instance}
 //}
 
 func (ts *tankStatus) GetInstance() uint8 {
@@ -41,8 +41,6 @@ func (ts *tankStatus) GetTankSize() uint16 {
 }
 
 func (r *tankStatus) Init(from *RvcFrame) {
-	r.lock.RLock()
-	defer r.lock.RUnlock()
 	r.RvcItem.Init(from)
 
 	var changed = false
@@ -84,12 +82,12 @@ func (r *tankStatus) Init(from *RvcFrame) {
 		(*r).tankSize = tmp
 	}
 	if changed {
-		(*r).lastChanged = (*r).timestamp
+		(*r).LastChanged = (*r).Timestamp
 	}
 }
 
 func (i *tankStatus) GetInstanceName() string {
-	var k = DGNInstanceKey{DGN: i.dgn, Instance: i.instance}
+	var k = DGNInstanceKey{DGN: i.DGN, Instance: i.instance}
 	var n, ok = DGNInstanceNames[k]
 	if ok {
 		return n
@@ -103,7 +101,7 @@ func (i *tankStatus) String() string {
 	var iname = i.GetInstanceName()
 
 	return fmt.Sprintf("DGN: %x (%s) SA: %d Instance: %d (%s) level %f relativeLevel: %d resolution: %d absoluteLevel: %d tanSize: %d ",
-		i.dgn, i.name,
+		i.DGN, i.Name,
 		i.GetSourceAddress(),
 		i.instance, iname,
 		i.GetLevel(),

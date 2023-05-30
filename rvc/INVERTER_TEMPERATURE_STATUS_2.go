@@ -11,7 +11,7 @@ import (
 //	Instance string = "123"
 //df dataField =
 //})
-//fields []string = {"Instance", "priority", "voltage", "current"}
+//fields []string = {"Instance", "Priority", "voltage", "current"}
 //)
 // The idea - we have this file called DC source status - the Instance gets updated in real time
 // so there's a single Instance that exists and represents the current state at any given point in
@@ -30,14 +30,12 @@ type inverterTemperatureStatus2 struct {
 }
 
 //func (r *inverterTemperatureStatus2) GetInstanceKey() interface{} {
-//	return DGNInstanceKey{r.dgn, r.instance}
+//	return DGNInstanceKey{r.DGN, r.instance}
 //}
 
 func (i *inverterTemperatureStatus2) String() string {
-	i.lock.RLock()
-	defer i.lock.RUnlock()
 	return fmt.Sprintf("DGN: %x(%s) SA: %d Instance: %d controlBoardTemp(C/f): %f/%f capTemp(C/f): %f/%f ambientTemp(Cf): %f/%f",
-		i.dgn, i.GetName(),
+		i.DGN, i.GetName(),
 		i.GetSourceAddress(),
 		i.GetInstance(),
 		i.controlBoardTemp,
@@ -50,23 +48,15 @@ func (i *inverterTemperatureStatus2) String() string {
 }
 
 func (r *inverterTemperatureStatus2) GetInstance() byte {
-	r.lock.RLock()
-	defer r.lock.RUnlock()
 	return r.instance
 }
 func (r *inverterTemperatureStatus2) GetCapacitorTemperature() float64 {
-	r.lock.RLock()
-	defer r.lock.RUnlock()
 	return r.capacitorTemp
 }
 func (r *inverterTemperatureStatus2) GetAmbientTemp() float64 {
-	r.lock.RLock()
-	defer r.lock.RUnlock()
 	return r.ambientTemp
 }
 func (r *inverterTemperatureStatus2) Init(from *RvcFrame) {
-	r.lock.Lock()
-	defer r.lock.Unlock()
 	r.RvcItem.Init(from)
 	var changed = false
 	var dataBytes = &from.Data
@@ -99,6 +89,6 @@ func (r *inverterTemperatureStatus2) Init(from *RvcFrame) {
 
 	}
 	if changed {
-		(*r).lastChanged = (*r).timestamp
+		(*r).LastChanged = (*r).Timestamp
 	}
 }

@@ -11,12 +11,15 @@ import (
 //	Instance string = "123"
 //df dataField =
 //})
-//fields []string = {"Instance", "priority", "voltage", "current"}
+//fields []string = {"Instance", "Priority", "voltage", "current"}
 //)
 // The idea - we have this file called DC source status - the Instance gets updated in real time
 // so there's a single Instance that exists and represents the current state at any given point in
 // time. We don't keep a handle to the RVC frame because we want to return it
 
+type DCSourceStatus1Spyder struct {
+	DCSourceStatus1
+}
 type DCSourceStatus1 struct {
 	RvcItem
 	deviceInstance byte
@@ -25,11 +28,19 @@ type DCSourceStatus1 struct {
 	current        float64
 }
 
+func (i *DCSourceStatus1) GetVoltage() float64 {
+	return i.voltage
+}
+
+func (i *DCSourceStatus1) GetCurrent() float64 {
+	return i.current
+}
+
 //func (r *DCSourceStatus1) GetInstanceKey() interface{} {
 //	r.lock.RLock()
 //	defer r.lock.RUnlock()
 //	return DGNInstanceKey{
-//		r.dgn,
+//		r.DGN,
 //		r.deviceInstance,
 //	}
 //}
@@ -37,27 +48,35 @@ type DCSourceStatus1 struct {
 func (i *DCSourceStatus1) String() string {
 	//var s = i.RvcItem.String()
 
-	return fmt.Sprintf("dcssDGN: %x(%s) SA: %d Instance: %d priority: %d voltage: %f current: %f",
-		i.dgn, i.GetName(), i.GetSourceAddress(), i.deviceInstance, i.devicePriority, i.voltage, i.current)
+	return fmt.Sprintf("dcssDGN: %x(%s) SA: %d Instance: %d Priority: %d voltage: %f current: %f",
+		i.DGN, i.GetName(), i.GetSourceAddress(), i.deviceInstance, i.devicePriority, i.voltage, i.current)
 	//return "ZZZXXX" + s + " " + t
 
 }
 
-func (r *DCSourceStatus1) getInstance() byte {
-	r.lock.RLock()
-	defer r.lock.RUnlock()
+func (r *DCSourceStatus1) GetInstance() byte {
 	return r.deviceInstance
+}
+
+func (i *DCSourceStatus1) GetInstanceName() string {
+	var k = DGNInstanceKey{DGN: i.DGN, Instance: i.deviceInstance}
+	var n, ok = GetInstanceName(k)
+	if ok {
+		return n
+	} else {
+		return ""
+	}
 }
 
 /*
 func (r *DCSourceStatus1) FieldUint8(f dataField) uint8 {
 	r.lockitem.RLock()
 	defer r.lockitem.RUnlock()
-	switch f.name {
-	case myFields[0].name:
+	switch f.Name {
+	case myFields[0].Name:
 		return r.deviceInstance
 		break
-	case myFields[1].name:
+	case myFields[1].Name:
 		return r.devicePriority
 		break
 	}
@@ -66,8 +85,6 @@ func (r *DCSourceStatus1) FieldUint8(f dataField) uint8 {
 */
 
 func (r *DCSourceStatus1) Init(from *RvcFrame) {
-	r.lock.Lock()
-	defer r.lock.Unlock()
 	r.RvcItem.Init(from)
 	var changed = false
 	var dataBytes = &from.Data
@@ -99,6 +116,6 @@ func (r *DCSourceStatus1) Init(from *RvcFrame) {
 		(*r).current = tmp
 	}
 	if changed {
-		(*r).lastChanged = (*r).timestamp
+		(*r).LastChanged = (*r).Timestamp
 	}
 }

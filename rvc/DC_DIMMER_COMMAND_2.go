@@ -11,8 +11,8 @@ import (
 type DCDimmerCommand2 struct {
 	//rvcItem             RvcItem
 	RvcItem
-	//timestamp         time.Time // last timestamp that we saw a command
-	//lastChanged       time.Time // last time this instance actually changed
+	//Timestamp         time.Time // last Timestamp that we saw a command
+	//LastChanged       time.Time // last time this instance actually changed
 	deviceInstance    byte    // 0
 	group             uint8   // 1
 	desiredBrightness float64 // 2 (%) this does NOT mean on/of - see command
@@ -26,7 +26,7 @@ type DCDimmerCommand2 struct {
 
 	rampTime float64 // seconds (0.1) 0-25 seconds
 	reserved uint8   //
-	//sourceAddress   byte    //
+	//SourceAddress   byte    //
 	//lock            sync.RWMutex
 }
 
@@ -44,7 +44,7 @@ func (r *DCDimmerCommand2) MarshalJSON() ([]byte, error) {
 //		r.lock.RLock()
 //		defer r.lock.RUnlock()
 //		return DGNInstanceKey{
-//			r.dgn,
+//			r.DGN,
 //			r.deviceInstance,
 //		}
 //	}
@@ -97,148 +97,98 @@ func (i *DCDimmerCommand2) Equals(o *DCDimmerCommand2) bool {
 //	return DGN_DC_DIMMER_COMMAND_2
 //}
 //func (i *DCDimmerCommand2) GetTimestamp() time.Time {
-//	return i.timestamp
+//	return i.Timestamp
 //}
 
 func (i *DCDimmerCommand2) SetDGN(dgn uint32) {
-	i.lock.RLock()
-	defer i.lock.RUnlock()
-	i.dgn = dgn
-	i.name = DGNName(dgn)
+	i.DGN = dgn
+	i.Name = DGNName(dgn)
 }
 
 func (i *DCDimmerCommand2) SetSourceAddress(sa uint8) {
-	i.lock.RLock()
-	defer i.lock.RUnlock()
-	i.sourceAddress = sa
+	i.SourceAddress = sa
 }
 
 func (i *DCDimmerCommand2) SetPriority(p uint8) {
-	i.lock.RLock()
-	defer i.lock.RUnlock()
-	i.priority = p
+	i.Priority = p
 }
 
 func (i *DCDimmerCommand2) SetInstance(inst uint8) {
-	i.lock.RLock()
-	defer i.lock.RUnlock()
 	i.deviceInstance = inst
 }
 func (i *DCDimmerCommand2) SetGroup(g uint8) {
-	i.lock.RLock()
-	defer i.lock.RUnlock()
 	i.group = g
 }
 func (i *DCDimmerCommand2) SetDesiredBringhtness(b float64) {
-	i.lock.RLock()
-	defer i.lock.RUnlock()
 	i.desiredBrightness = b
 }
 func (i *DCDimmerCommand2) SetCommand(cmd uint8) {
-	i.lock.RLock()
-	defer i.lock.RUnlock()
 	i.command = cmd
 }
 func (i *DCDimmerCommand2) GetInstance() uint8 {
-	i.lock.RLock()
-	defer i.lock.RUnlock()
 	return i.deviceInstance
 }
 
 func (i *DCDimmerCommand2) GetGroup() uint8 {
-	i.lock.RLock()
-	defer i.lock.RUnlock()
 	return i.group
 }
 
 func (i *DCDimmerCommand2) GetDesiredBrightness() float64 {
-	i.lock.RLock()
-	defer i.lock.RUnlock()
 	return i.desiredBrightness
 }
 
 func (i *DCDimmerCommand2) GetCommand() uint8 {
-	i.lock.RLock()
-	defer i.lock.RUnlock()
 	return i.command
 }
 func (i *DCDimmerCommand2) GetInterlockStatus() constants.Uint2 {
-	i.lock.RLock()
-	defer i.lock.RUnlock()
 	return i.interlockStatus
 }
 
 func (i *DCDimmerCommand2) SetInterlockStatus(s constants.Uint2) {
-	i.lock.RLock()
-	defer i.lock.RUnlock()
 	i.interlockStatus = s
 }
 
 func (i *DCDimmerCommand2) SetReserved1(s constants.Uint2) {
-	i.lock.RLock()
-	defer i.lock.RUnlock()
 	i.reserved1 = s
 }
 
 func (i *DCDimmerCommand2) SetReserved2(s constants.Uint2) {
-	i.lock.RLock()
-	defer i.lock.RUnlock()
 	i.reserved2 = s
 }
 
 func (i *DCDimmerCommand2) SetReserved3(s constants.Uint2) {
-	i.lock.RLock()
-	defer i.lock.RUnlock()
 	i.reserved3 = s
 }
 
 func (i *DCDimmerCommand2) GetDelayDuration() uint8 {
-	i.lock.RLock()
-	defer i.lock.RUnlock()
 	return i.delayDuration
 }
 func (i *DCDimmerCommand2) SetDelayDuration(d uint8) {
-	i.lock.RLock()
-	defer i.lock.RUnlock()
 	i.delayDuration = d
 }
 func (i *DCDimmerCommand2) GetRampTime() float64 {
-	i.lock.RLock()
-	defer i.lock.RUnlock()
 	return i.rampTime
 }
 
 func (i *DCDimmerCommand2) SetRampTime(rt float64) {
-	i.lock.RLock()
-	defer i.lock.RUnlock()
 	i.rampTime = rt
 }
 
 func (i *DCDimmerCommand2) SetReserved(r uint8) {
-	i.lock.RLock()
-	defer i.lock.RUnlock()
 	i.reserved = r
 }
 func (i *DCDimmerCommand2) GetReserved() uint8 {
-	i.lock.RLock()
-	defer i.lock.RUnlock()
 	return i.reserved
 }
 
 func (i *DCDimmerCommand2) GetReserved1() constants.Uint2 {
-	i.lock.RLock()
-	defer i.lock.RUnlock()
 	return i.reserved1
 }
 
 func (i *DCDimmerCommand2) GetReserved2() constants.Uint2 {
-	i.lock.RLock()
-	defer i.lock.RUnlock()
 	return i.reserved2
 }
 func (i *DCDimmerCommand2) GetReserved3() constants.Uint2 {
-	i.lock.RLock()
-	defer i.lock.RUnlock()
 	return i.reserved3
 }
 
@@ -286,15 +236,11 @@ func (i *DCDimmerCommand2) String() string {
 }
 
 func (r *DCDimmerCommand2) GetSourceAddress() uint8 {
-	r.lock.Lock()
-	defer r.lock.Unlock()
-	return r.sourceAddress
+	return r.SourceAddress
 }
 func (r *DCDimmerCommand2) Init(from *RvcFrame) {
-	r.lock.Lock()
-	defer r.lock.Unlock()
-	//r.timestamp = (*from).GetTimeStamp()
-	//r.sourceAddress = (*from).GetSourceAddress()
+	//r.Timestamp = (*from).GetTimeStamp()
+	//r.SourceAddress = (*from).GetSourceAddress()
 	r.RvcItem.Init(from)
 
 	// TODO some test for all these bits....
@@ -381,7 +327,7 @@ func (r *DCDimmerCommand2) Init(from *RvcFrame) {
 	}
 
 	if changed {
-		r.lastChanged = r.timestamp
+		r.LastChanged = r.Timestamp
 	}
 
 }
@@ -389,8 +335,6 @@ func (r *DCDimmerCommand2) Init(from *RvcFrame) {
 // CreateFrame - create the data frame to be send in order to issue the command
 func (r *DCDimmerCommand2) CreateFrame() *RvcFrame {
 	var ret = RvcFrame{}
-	r.lock.Lock()
-	defer r.lock.Unlock()
 
 	// TODO we really should not have to do this here !
 	ret.SetEFF_RTR_ERR_Flag(constants.CAN_EFF_FLAG2)
@@ -416,10 +360,10 @@ func (r *DCDimmerCommand2) CreateFrame() *RvcFrame {
 	}
 	utils.SetByte(&ret.Data, 7, r.reserved)
 
-	ret.PGN.SetPGNValue(r.dgn)
+	ret.PGN.SetPGNValue(r.DGN)
 	ret.SetPriority(0x06)
 	ret.Length = 8                        //
-	ret.SetSourceAddress(r.sourceAddress) // Always 8 bits
+	ret.SetSourceAddress(r.SourceAddress) // Always 8 bits
 	ret.SetCanMessage()
 	return &ret
 }

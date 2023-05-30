@@ -12,6 +12,7 @@ import (
 	"rvctomqtt/pool"
 	"rvctomqtt/rvc"
 	"rvctomqtt/rvcChangeListener"
+	"rvctomqtt/rvcmqtt"
 
 	//"rvctomqtt/rvc"
 	"time"
@@ -25,8 +26,14 @@ func main() {
 	// This channel sends change event  messages (not pointer)
 	rvcChangeEvents := make(chan rvc.RvcItemIF, 32)
 
+	// This channel send JSON message to MQTT
+	mqttEvents := make(chan *rvcmqtt.MqttMessage, 32)
+
 	// Listen on this to process the raw can message
 	fromSocket := make(chan *intf.CanFrameIF, 32)
+
+	snd := rvcmqtt.NewSender("tcp://192.168.50.12:1883", "goplay")
+	go snd.AwaitMessages(mqttEvents)
 
 	// seems like we must be explicit with the interface - we can't pass the item
 	// that implements it
@@ -69,7 +76,7 @@ func main() {
 
 	go handler.RVCMessageHandler(&ctx2, log, fromSocket, dataFramePool, rvcChangeEvents)
 
-	go rvcChangeListener.Listen(rvcChangeEvents)
+	go rvcChangeListener.Listen(rvcChangeEvents, mqttEvents)
 
 	for {
 		fmt.Printf("Sleep # goRoutines = %d\n", runtime.NumGoroutine())

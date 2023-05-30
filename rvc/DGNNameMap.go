@@ -215,7 +215,7 @@ func init() {
 	dGNtoName[DGN_ADDRESS_CLAIMED] = "ADDRESS_CLAIMED"
 }
 
-// func DGNName(rvcFrame *RvcFrame, dgn uint32) string {
+// func DGNName(rvcFrame *RvcFrame, DGN uint32) string {
 func DGNName(dgn uint32) string {
 	var ret = dGNtoName[dgn]
 
@@ -239,7 +239,7 @@ func DGNName(dgn uint32) string {
 	return ret
 
 	/*
-		switch dgn {
+		switch DGN {
 		//case 0x1fffd:
 		//	ret = "DC_SOURCE_STATUS_1"
 		//	break
@@ -901,11 +901,11 @@ func DGNName(dgn uint32) string {
 
 		default:
 			// 0x17E00
-			if (dgn & 0xfff00) == 0x017E00 {
+			if (DGN & 0xfff00) == 0x017E00 {
 				ret = "TERMINAL??"
-			} else if (dgn & 0xfff00) == 0x0E800 {
+			} else if (DGN & 0xfff00) == 0x0E800 {
 				ret = "ACK"
-			} else if (dgn & 0xfff00) == 0x0EA00 {
+			} else if (DGN & 0xfff00) == 0x0EA00 {
 				ret = "DGN REQ"
 
 				// 1EF00h 1EFxxh proprietary DGN

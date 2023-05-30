@@ -11,7 +11,7 @@ import (
 //	Instance string = "123"
 //df dataField =
 //})
-//fields []string = {"Instance", "priority", "voltage", "current"}
+//fields []string = {"Instance", "Priority", "voltage", "current"}
 //)
 // The idea - we have this file called DC source status - the Instance gets updated in real time
 // so there's a single Instance that exists and represents the current state at any given point in
@@ -38,66 +38,58 @@ type airConditionerStatus struct {
 //	r.lock.RLock()
 //	defer r.lock.RUnlock()
 //	return DGNInstanceKey{
-//		r.dgn,
+//		r.DGN,
 //		r.instance,
 //	}
 //}
 
 func (i *airConditionerStatus) String() string {
 	return fmt.Sprintf("acss DGN: %x(%s) SA: %d Instance: %d operatingModel: %d maxFanSpeed: %f maxOutputLevel: %f fanSpeed: %f acOutputLevel: %f deadBand %f, 2ndStagDeadBand2 %f",
-		i.dgn, i.GetName(),
+		i.DGN, i.GetName(),
 		i.GetSourceAddress(),
 		i.instance, i.operatingMode, i.maxFanSpeed, i.maxOutputLevel, i.fanSpeed,
 		i.acOutputLevel, i.deadBand, i.secondStageDeadBand)
 }
 
 func (r *airConditionerStatus) GetInstance() byte {
-	r.lock.RLock()
-	defer r.lock.RUnlock()
 	return r.instance
 }
+func (i *airConditionerStatus) GetInstanceName() string {
+	var k = DGNInstanceKey{DGN: i.GetDGN(), Instance: i.instance}
+	var n, ok = DGNInstanceNames[k]
+	if ok {
+		return n
+	} else {
+		return ""
+	}
+}
+
 func (r *airConditionerStatus) GetOperationgMode() uint8 {
-	r.lock.RLock()
-	defer r.lock.RUnlock()
 	return r.operatingMode
 }
 func (r *airConditionerStatus) GetMaxFanSpeed() float64 {
-	r.lock.RLock()
-	defer r.lock.RUnlock()
 	return r.maxFanSpeed
 }
 func (r *airConditionerStatus) GetMaxOutputLevel() float64 {
-	r.lock.RLock()
-	defer r.lock.RUnlock()
 	return r.maxOutputLevel
 }
 
 func (r *airConditionerStatus) GetFanSpeed() float64 {
-	r.lock.RLock()
-	defer r.lock.RUnlock()
 	return r.fanSpeed
 }
 func (r *airConditionerStatus) GetACOutputLevel() float64 {
-	r.lock.RLock()
-	defer r.lock.RUnlock()
 	return r.acOutputLevel
 }
 
 func (r *airConditionerStatus) GetDeadBand() float64 {
-	r.lock.RLock()
-	defer r.lock.RUnlock()
 	return r.deadBand
 }
 
 func (r *airConditionerStatus) GetSecondStageDeadBand() float64 {
-	r.lock.RLock()
-	defer r.lock.RUnlock()
 	return r.secondStageDeadBand
 }
 
 func (r *airConditionerStatus) Init(from *RvcFrame) {
-	r.lock.Lock()
-	defer r.lock.Unlock()
 	r.RvcItem.Init(from)
 	var changed = false
 	var dataBytes = &from.Data
@@ -154,6 +146,6 @@ func (r *airConditionerStatus) Init(from *RvcFrame) {
 
 	}
 	if changed {
-		(*r).lastChanged = (*r).timestamp
+		(*r).LastChanged = (*r).Timestamp
 	}
 }

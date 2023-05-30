@@ -46,7 +46,7 @@ func TestAddressClaim2(t *testing.T) {
 	ac.Init(&f)
 
 	if ac.GetDestinationAddress() != 0x14 {
-		t.Errorf("Wrong requested source address  expected: %x got %x\n", desiredSA, ac.sourceAddress)
+		t.Errorf("Wrong requested source address  expected: %x got %x\n", desiredSA, ac.SourceAddress)
 	}
 
 	if !ac.isAddressClaim {
@@ -61,10 +61,10 @@ func TestAddressClaim2(t *testing.T) {
 func TestAddressClaimCreateFrame2(t *testing.T) {
 
 	var acOrig = InformationRequest{}
-	acOrig.dgn = DGN_INFORMATION_REQUEST
-	acOrig.name = DGNName(acOrig.dgn)
+	acOrig.DGN = DGN_INFORMATION_REQUEST
+	acOrig.Name = DGNName(acOrig.DGN)
 	acOrig.SetPriority(0x06)
-	acOrig.sourceAddress = 0xFE
+	acOrig.SourceAddress = 0xFE
 
 	// set AFTER setting up the DGN so it can be update correctly
 	acOrig.SetAsAddressClaim(0x14)
@@ -97,9 +97,9 @@ func TestAddressClaimCreateFrame3(t *testing.T) {
 
 	var acOrig = InformationRequest{}
 	acOrig.SetDGN(DGN_INFORMATION_REQUEST)
-	acOrig.name = DGNName(acOrig.dgn)
-	acOrig.priority = 0x06
-	acOrig.sourceAddress = 0xFE
+	acOrig.Name = DGNName(acOrig.DGN)
+	acOrig.Priority = 0x06
+	acOrig.SourceAddress = 0xFE
 
 	acOrig.SetDestinationAddress(destAddr)
 	acOrig.SetDesiredDGN(desiredDGN)

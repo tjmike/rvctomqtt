@@ -79,67 +79,43 @@ func (r *AddressClaimed) Equals(o *AddressClaimed) bool {
 }
 
 func (ac *AddressClaimed) SetCompatabilityField1(cf uint8) {
-	ac.lock.Lock()
-	defer ac.lock.Unlock()
 	ac.compatabilityField1 = cf
 }
 func (ac *AddressClaimed) SetCompatabilityField2(cf uint8) {
-	ac.lock.Lock()
-	defer ac.lock.Unlock()
 	ac.compatabilityField2 = cf & 0x7f
 }
 func (ac *AddressClaimed) SetCompatabilityField3(cf uint8) {
-	ac.lock.Lock()
-	defer ac.lock.Unlock()
 	ac.compatabilityField3 = cf & 0x0f
 }
 func (ac *AddressClaimed) SetCompatabilityField4(cf uint8) {
-	ac.lock.Lock()
-	defer ac.lock.Unlock()
 	ac.compatabilityField3 = cf & 0x07
 }
 func (ac *AddressClaimed) SetSerialNumber(snr uint32) {
-	ac.lock.Lock()
-	defer ac.lock.Unlock()
 	ac.serialNumber = snr & 0x00_1f_ff_ff
 }
 func (ac *AddressClaimed) SetManufacturerCode(mfgrCode uint32) {
-	ac.lock.Lock()
-	defer ac.lock.Unlock()
 	ac.mfgrCode = mfgrCode & 0x07ff
 }
 func (ac *AddressClaimed) SetNodeInstance(inst uint8) {
-	ac.lock.Lock()
-	defer ac.lock.Unlock()
 	ac.nodeInstance = inst
 }
 func (ac *AddressClaimed) SetFunctionInstance(inst uint8) {
-	ac.lock.Lock()
-	defer ac.lock.Unlock()
 	ac.functionInstance = inst
 }
 func (ac *AddressClaimed) SetArbitraryAddressCapable(c uint8) {
-	ac.lock.Lock()
-	defer ac.lock.Unlock()
 	ac.arbitraryAddressCapable = c & 0x01
 }
 
 // //////////////////////////////////
 func (ac *AddressClaimed) SetSourceAddress(sa uint8) {
-	ac.lock.RLock()
-	defer ac.lock.RUnlock()
-	ac.sourceAddress = sa
+	ac.SourceAddress = sa
 }
 func (ac *AddressClaimed) SetDGN(dgn uint32) {
-	ac.lock.RLock()
-	defer ac.lock.RUnlock()
-	ac.dgn = dgn
-	ac.name = dGNtoName[dgn]
+	ac.DGN = dgn
+	ac.Name = dGNtoName[dgn]
 }
 func (ac *AddressClaimed) SetPriority(p uint8) {
-	ac.lock.RLock()
-	defer ac.lock.RUnlock()
-	ac.priority = p
+	ac.Priority = p
 }
 func (ac *AddressClaimed) String() string {
 	var s = ac.RvcItem.String()
@@ -150,8 +126,6 @@ func (ac *AddressClaimed) String() string {
 
 }
 func (ac *AddressClaimed) Init(from *RvcFrame) {
-	ac.lock.Lock()
-	defer ac.lock.Unlock()
 	ac.RvcItem.Init(from)
 
 	// b0 serial # lsb -- Optional. Required if multiple nodes from the same manufacturer may be present on the network.
@@ -195,8 +169,6 @@ func (ac *AddressClaimed) Init(from *RvcFrame) {
 // CreateFrame - create the data frame to be send in order to issue the command
 func (ac *AddressClaimed) CreateFrame() *RvcFrame {
 	var ret = RvcFrame{}
-	ac.lock.Lock()
-	defer ac.lock.Unlock()
 
 	// b0 serial # lsb -- Optional. Required if multiple nodes from the same manufacturer may be present on the network.
 	// b1 serial #
@@ -230,7 +202,7 @@ func (ac *AddressClaimed) CreateFrame() *RvcFrame {
 	ret.SetEFF_RTR_ERR_Flag(constants.CAN_EFF_FLAG2)
 
 	// create the DGN - ignoring the SA and setting it to the desired SA
-	var reqDGN = ac.dgn
+	var reqDGN = ac.DGN
 	reqDGN = reqDGN & 0xffffff00
 	//reqDGN = reqDGN | (uint32(ac.desiredSA))
 

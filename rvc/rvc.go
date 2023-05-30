@@ -9,11 +9,11 @@ import (
 
 // J1939 Frame Info
 // 29 bit CAN frame
-// 3 Bit priority  18 bit PGN  8 bit source address (SA)
+// 3 Bit Priority  18 bit PGN  8 bit source address (SA)
 // PGN
 // 1 bit reserved,1 bit page,8 but PDU,8 bit PDU specific
 // bits 28-0
-// 28-26 priority
+// 28-26 Priority
 // 25 reserved
 // 24 page
 // 23-16 PDU
@@ -26,7 +26,7 @@ import (
 // Extended ID - 2 least significant bytes
 // For that 29 bit message
 // Bits ----
-// 28-26 Priority 111 Highest - 000 Lowest (j1939 priority)
+// 28-26 Priority 111 Highest - 000 Lowest (j1939 Priority)
 //    25 Reserved - always zero
 // 24-18 DGN (Data Group Number) High
 // 17-16      Identifies how the data packet should be parsed, possibly in combination with the DGN-Low
@@ -41,7 +41,7 @@ type RvcFrame struct {
 	j1939.J1939Frame
 }
 
-// For priority we already have GetPriority()
+// For Priority we already have GetPriority()
 
 func (msg *RvcFrame) SA() uint8 {
 	return msg.GetSourceAddress()

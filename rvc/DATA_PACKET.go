@@ -24,7 +24,7 @@ type DataPacket struct {
 //		r.lock.RLock()
 //		defer r.lock.RUnlock()
 //		return DataPacketKey{
-//			r.sourceAddress,
+//			r.SourceAddress,
 //			r.packetNumber,
 //		}
 //	}
@@ -38,8 +38,6 @@ func (r *DataPacket) String() string {
 	return s
 }
 func (r *DataPacket) Init(from *RvcFrame) {
-	r.lock.Lock()
-	defer r.lock.Unlock()
 	r.RvcItem.Init(from)
 	var dataBytes = &from.Data
 
@@ -53,4 +51,11 @@ func (r *DataPacket) Init(from *RvcFrame) {
 		}
 	}
 	r.message = sb.String()
+}
+
+func (r *DataPacket) GetPacketNumber() uint8 {
+	return r.packetNumber
+}
+func (r *DataPacket) GetMessage() string {
+	return r.message
 }
