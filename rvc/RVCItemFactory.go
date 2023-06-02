@@ -36,6 +36,11 @@ func GetRVCItem(f *RvcFrame) (*RvcItemIF, bool) {
 	defer locker.Unlock()
 	var ret, ok = rvcItemMap[key]
 	if ok {
+
+		if f.DGN() == DGN_CHASSIS_MOBILITY_STATUS {
+			fmt.Printf("DGN_CHASSIS_MOBILITY_STATUS RAW DATA: %s\n", f)
+		}
+
 		return ret, true
 	} else {
 		var created, ok = createRVCItem(f)
@@ -96,6 +101,8 @@ func getInstanceKey(f *RvcFrame) interface{} {
 		return DGNInstanceKey{dgn, f.Data[0]}
 	case DGN_TANK_STATUS:
 		return DGNInstanceKey{dgn, f.Data[0]}
+	case DGN_CHASSIS_MOBILITY_STATUS:
+		return ChassisMobilityStatusKey{}
 	}
 
 	// TODO log
@@ -181,7 +188,6 @@ func createRVCItem(f *RvcFrame) (RvcItemIF, bool) {
 		{
 			var ret RvcItemIF
 			ret = &InitialPacket{}
-			//fmt.Printf("Initial Packet Called CALLED  %s\n", ret)
 			return ret, true
 		}
 
@@ -189,7 +195,13 @@ func createRVCItem(f *RvcFrame) (RvcItemIF, bool) {
 		{
 			var ret RvcItemIF
 			ret = &DataPacket{}
-			//fmt.Printf("Initial Packet Called CALLED  %s\n", ret)
+			return ret, true
+		}
+	case DGN_CHASSIS_MOBILITY_STATUS:
+		{
+			var ret RvcItemIF
+			ret = &ChassisMobilityStatus{isTiffinFlavor: true}
+			fmt.Printf("DGN_CHASSIS_MOBILITY_STATUS CREATE RAW DATA: %s\n", f)
 			return ret, true
 		}
 	}

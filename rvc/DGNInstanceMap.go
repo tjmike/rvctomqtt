@@ -16,13 +16,19 @@ const (
 	DGN_ADDRESS_CLAIMED               uint32 = 0x0EE00
 	DGN_INITIAL_PACKET                uint32 = 0x0ECFF
 	DGN_DATA_PACKET                   uint32 = 0x0EBFF
+	DGN_CHASSIS_MOBILITY_STATUS       uint32 = 0x1FFF4
 
 	DGN_PRODUCT_IDENTIFICATION_MESSAGE uint32 = 0xFEEB
 
+	INSTANCE_BEDROOM_CEILING      uint8 = 12
 	INSTANCE_LIGHT_PASSENGER_TASK uint8 = 14
 	INSTANCE_REAR_AC_UNIT         uint8 = 1
 	INSTANCE_MID_AC_UNIT          uint8 = 2
 	INSTANCE_FRONT_AC_UNIT        uint8 = 3
+	INSTANCE_WATER_PUMP           uint8 = 125
+	INSTANCE_AQUAHOT_ELECTRIC     uint8 = 129
+	INSTANCE_AQUAHOT_GAS          uint8 = 130
+	INSTANCE_AQUAHOT_PREHEAT      uint8 = 131
 
 	RVC_DATA_NOT_AVAILABLE uint8 = 255
 )
@@ -75,7 +81,7 @@ func init() {
 	DGNInstanceNames[DGNInstanceKey{DGN: DGN_DC_DIMMER_STATUS_3, Instance: 9}] = "Passenger Courtesy"
 	DGNInstanceNames[DGNInstanceKey{DGN: DGN_DC_DIMMER_STATUS_3, Instance: 10}] = "Bedroom Courtesy"
 	DGNInstanceNames[DGNInstanceKey{DGN: DGN_DC_DIMMER_STATUS_3, Instance: 11}] = "Bedroom Sconce"
-	DGNInstanceNames[DGNInstanceKey{DGN: DGN_DC_DIMMER_STATUS_3, Instance: 12}] = "Bedroom Ceiling"
+	DGNInstanceNames[DGNInstanceKey{DGN: DGN_DC_DIMMER_STATUS_3, Instance: INSTANCE_BEDROOM_CEILING}] = "Bedroom Ceiling"
 	DGNInstanceNames[DGNInstanceKey{DGN: DGN_DC_DIMMER_STATUS_3, Instance: INSTANCE_LIGHT_PASSENGER_TASK}] = "Passenger Task"
 	DGNInstanceNames[DGNInstanceKey{DGN: DGN_DC_DIMMER_STATUS_3, Instance: 15}] = "Mid Bath Ceiling"
 	DGNInstanceNames[DGNInstanceKey{DGN: DGN_DC_DIMMER_STATUS_3, Instance: 16}] = "Mid Bath Vanity"
@@ -92,6 +98,41 @@ func init() {
 	DGNInstanceNames[DGNInstanceKey{DGN: DGN_DC_DIMMER_STATUS_3, Instance: 87}] = "Passenger Map"
 	DGNInstanceNames[DGNInstanceKey{DGN: DGN_DC_DIMMER_STATUS_3, Instance: 91}] = "Exterior Road"
 	DGNInstanceNames[DGNInstanceKey{DGN: DGN_DC_DIMMER_STATUS_3, Instance: 92}] = "Exterior Porch"
+	DGNInstanceNames[DGNInstanceKey{DGN: DGN_DC_DIMMER_STATUS_3, Instance: INSTANCE_WATER_PUMP}] = "Water Pump"
+	DGNInstanceNames[DGNInstanceKey{DGN: DGN_DC_DIMMER_STATUS_3, Instance: INSTANCE_AQUAHOT_ELECTRIC}] = "Aquahot Electric"
+	DGNInstanceNames[DGNInstanceKey{DGN: DGN_DC_DIMMER_STATUS_3, Instance: INSTANCE_AQUAHOT_GAS}] = "Aquahot Gas"
+	DGNInstanceNames[DGNInstanceKey{DGN: DGN_DC_DIMMER_STATUS_3, Instance: INSTANCE_AQUAHOT_PREHEAT}] = "Aquahot PreHeat"
+
+	// 47,58,59,120 seem to fire all the time...
+
+	// 129  Aquahot ELEC (MAYBE NOT????)
+	//  130 Aquahot Fuel
+	// 131   Aquahot PreHeat
+	// 125    Water pump:
+
+	// (30,31)  mid bath vent lid????
+	// (29) mid bath vent fan
+
+	//  (27,26) galley vent lid
+	//  (25) galley vent fan
+	// CLOSE:
+	// TOPIC: mycoach/events/DC_DIMMER_COMMAND_2/26 JSON: {"Command":3,"DGN":130779,"DelayDuration":0,"DesiredBrightness":0.000000,"Group":255,"Instance":26,"InstanceName":"","InterlockStatus":0,"LastChanged":"2023-05-30T14:14:08.513488-04:00","LastNotified":"2023-05-30T14:14:08.513488-04:00","Name":"DC_DIMMER_COMMAND_2","Priority":6,"RampTime":25.500000,"Reserved":255,"Reserved1":0,"Reserved2":0,"Reserved3":0,"SourceAddress":150,"Timestamp":"2023-05-30T14:14:08.513488-04:00"}
+	//TOPIC: mycoach/events/DC_DIMMER_COMMAND_2/27 JSON: {"Command":1,"DGN":130779,"DelayDuration":20,"DesiredBrightness":100.000000,"Group":255,"Instance":27,"InstanceName":"","InterlockStatus":0,"LastChanged":"2023-05-30T14:14:08.517644-04:00","LastNotified":"2023-05-30T14:14:08.517644-04:00","Name":"DC_DIMMER_COMMAND_2","Priority":6,"RampTime":25.500000,"Reserved":255,"Reserved1":0,"Reserved2":0,"Reserved3":0,"SourceAddress":150,"Timestamp":"2023-05-30T14:14:08.517644-04:00"}
+	// OPEN:
+	//TOPIC: mycoach/events/DC_DIMMER_COMMAND_2/27 JSON: {"Command":3,"DGN":130779,"DelayDuration":0,"DesiredBrightness":0.000000,"Group":255,"Instance":27,"InstanceName":"","InterlockStatus":0,"LastChanged":"2023-05-30T14:15:28.357532-04:00","LastNotified":"2023-05-30T14:15:28.357532-04:00","Name":"DC_DIMMER_COMMAND_2","Priority":6,"RampTime":25.500000,"Reserved":255,"Reserved1":0,"Reserved2":0,"Reserved3":0,"SourceAddress":150,"Timestamp":"2023-05-30T14:15:28.357532-04:00"}
+	//TOPIC: mycoach/events/DC_DIMMER_COMMAND_2/26 JSON: {"Command":1,"DGN":130779,"DelayDuration":20,"DesiredBrightness":100.000000,"Group":255,"Instance":26,"InstanceName":"","InterlockStatus":0,"LastChanged":"2023-05-30T14:15:28.371988-04:00","LastNotified":"2023-05-30T14:15:28.371988-04:00","Name":"DC_DIMMER_COMMAND_2","Priority":6,"RampTime":25.500000,"Reserved":255,"Reserved1":0,"Reserved2":0,"Reserved3":0,"SourceAddress":150,"Timestamp":"2023-05-30T14:15:28.371988-04:00"}
+	// OPEN: Spyder
+	// TOPIC: mycoach/events/DC_DIMMER_COMMAND_2/31 JSON: {"Command":3,"DGN":130779,"DelayDuration":0,"DesiredBrightness":0.000000,"Group":255,"Instance":31,"InstanceName":"","InterlockStatus":0,"LastChanged":"2023-05-30T14:32:04.647526-04:00","LastNotified":"2023-05-30T14:32:04.647526-04:00","Name":"DC_DIMMER_COMMAND_2","Priority":6,"RampTime":25.500000,"Reserved":255,"Reserved1":0,"Reserved2":0,"Reserved3":0,"SourceAddress":156,"Timestamp":"2023-05-30T14:32:04.647526-04:00"}
+	//TOPIC: mycoach/events/DC_DIMMER_COMMAND_2/30 JSON: {"Command":1,"DGN":130779,"DelayDuration":20,"DesiredBrightness":100.000000,"Group":255,"Instance":30,"InstanceName":"","InterlockStatus":0,"LastChanged":"2023-05-30T14:32:04.714473-04:00","LastNotified":"2023-05-30T14:32:04.714473-04:00","Name":"DC_DIMMER_COMMAND_2","Priority":6,"RampTime":25.500000,"Reserved":255,"Reserved1":0,"Reserved2":0,"Reserved3":0,"SourceAddress":156,"Timestamp":"2023-05-30T14:32:04.714473-04:00"}
+	// Open Spyder HOLDING and then release
+	// TOPIC: mycoach/events/DC_DIMMER_COMMAND_2/31 JSON: {"Command":3,"DGN":130779,"DelayDuration":0,"DesiredBrightness":0.000000,"Group":255,"Instance":31,"InstanceName":"","InterlockStatus":0,"LastChanged":"2023-05-30T14:33:42.188644-04:00","LastNotified":"2023-05-30T14:33:42.188644-04:00","Name":"DC_DIMMER_COMMAND_2","Priority":6,"RampTime":25.500000,"Reserved":255,"Reserved1":0,"Reserved2":0,"Reserved3":0,"SourceAddress":156,"Timestamp":"2023-05-30T14:33:42.188644-04:00"}
+	//TOPIC: mycoach/events/DC_DIMMER_COMMAND_2/30 JSON: {"Command":1,"DGN":130779,"DelayDuration":2,"DesiredBrightness":100.000000,"Group":255,"Instance":30,"InstanceName":"","InterlockStatus":0,"LastChanged":"2023-05-30T14:33:43.187872-04:00","LastNotified":"2023-05-30T14:33:43.187872-04:00","Name":"DC_DIMMER_COMMAND_2","Priority":6,"RampTime":25.500000,"Reserved":255,"Reserved1":0,"Reserved2":0,"Reserved3":0,"SourceAddress":156,"Timestamp":"2023-05-30T14:33:43.187872-04:00"}
+	//TOPIC: mycoach/events/DC_DIMMER_COMMAND_2/30 JSON: {"Command":3,"DGN":130779,"DelayDuration":0,"DesiredBrightness":0.000000,"Group":255,"Instance":30,"InstanceName":"","InterlockStatus":0,"LastChanged":"2023-05-30T14:33:46.737499-04:00","LastNotified":"2023-05-30T14:33:46.737499-04:00","Name":"DC_DIMMER_COMMAND_2","Priority":6,"RampTime":25.500000,"Reserved":255,"Reserved1":0,"Reserved2":0,"Reserved3":0,"SourceAddress":156,"Timestamp":"2023-05-30T14:33:46.737499-04:00"}
+
+	// locks
+	//   all
+	//   door
+	//   bay
 
 	DGNInstanceNames[DGNInstanceKey{DGN: DGN_AIR_CONDITIONER_STATUS, Instance: INSTANCE_REAR_AC_UNIT}] = "Rear AC"
 	DGNInstanceNames[DGNInstanceKey{DGN: DGN_AIR_CONDITIONER_STATUS, Instance: INSTANCE_MID_AC_UNIT}] = "Mid AC"

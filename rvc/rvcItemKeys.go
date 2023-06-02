@@ -8,7 +8,9 @@ type DGNInstanceKey struct {
 	DGN      uint32
 	Instance uint8
 }
-
+type ChassisMobilityStatusKey struct {
+	// nothing there is only of these
+}
 type AddressClaimedKey struct {
 	sourceAddress uint8
 }

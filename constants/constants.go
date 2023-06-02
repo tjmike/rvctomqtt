@@ -23,3 +23,8 @@ const (
 	OutOfRangeUint8       uint8 = 254
 	ReservedUint8         uint8 = 253
 )
+
+func KMPHtoMPH(kmph float64) float64 {
+	return kmph * 0.621371192
+
+}

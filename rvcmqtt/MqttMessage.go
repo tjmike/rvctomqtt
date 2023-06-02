@@ -8,5 +8,5 @@ type MqttMessage struct {
 }
 
 func (m *MqttMessage) String() string {
-	return fmt.Sprint("Topic: %s Payload %s", m.Topic, m.Payload)
+	return fmt.Sprintf("Topic: %s Payload %s", m.Topic, m.Payload)
 }
